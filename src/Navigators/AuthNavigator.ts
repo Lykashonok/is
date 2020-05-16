@@ -1,17 +1,13 @@
 import { createStackNavigator, TransitionPresets } from 'react-navigation-stack';
 import LoginScreen from "../Screens/Auth/LoginScreen";
-import PhoneEnterScreen from '../Screens/Auth/PhoneEnterScreen';
-import ConfirmPhoneScreen from '../Screens/Auth/ConfirmPhoneScreen';
+import RegisterScreen from "../Screens/Auth/RegisterScreen"
 
-export default LoginNavigator = createStackNavigator({
+const AuthNavigator = createStackNavigator({
     Login : {
         screen: LoginScreen
     },
-    LoginEnter : {
-        screen: PhoneEnterScreen
-    },
-    ConfirmPhone: {
-        screen: ConfirmPhoneScreen
+    Register : {
+        screen: RegisterScreen
     }
 }, {
     headerMode: 'none',
@@ -19,3 +15,5 @@ export default LoginNavigator = createStackNavigator({
         ...TransitionPresets.SlideFromRightIOS
     }
 })
+
+export default AuthNavigator

@@ -1,8 +1,8 @@
-import {createSwitchNavigator, createAppContainer} from 'react-navigation'
+import { createSwitchNavigator, createAppContainer } from 'react-navigation'
+import { TransitionPresets } from 'react-navigation-stack'
 import AuthNavigator from './AuthNavigator'
 import MainNavigator from './MainNavigator'
-import { TransitionPresets } from 'react-navigation-stack'
-import SlidesScreen from '../Screens/SlidesScreen';
+import SlidesScreen from '../Screens/SlidesScreen'
 
 const SwitchNavigationConfig = createSwitchNavigator({
     Auth: {
