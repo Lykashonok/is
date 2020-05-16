@@ -5,6 +5,7 @@ import { Text, View, TouchableOpacity } from 'react-native';
 import { navigationProps } from 'src/Interfaces/shortcuts';
 import { IUserProperties as User } from 'src/Redux/types/User';
 import { AppState } from 'src/Redux/store/configureStore';
+import { registrateUser } from '../../Networking/ServerRequest';
 
 interface ILoginScreenProps {
     navigation: navigationProps;
@@ -30,6 +31,14 @@ class LoginScreen extends Component<Props, ILoginScreenState> {
             <Text>
               Go to Login Screen
             </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={async () => {
+          let response = await registrateUser('qwer@qwer.qwer','qwer','qwer','qwer','qwer','qwer')
+          console.log(response)
+        }}>
+          <Text>
+            Registrate new user
+          </Text>
         </TouchableOpacity>
       </View>
     );
