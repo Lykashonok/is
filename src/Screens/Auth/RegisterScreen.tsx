@@ -1,44 +1,60 @@
 import styles from '../../Styles/main';
 import React, { Component } from 'react';
+import { Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { UserManager } from '../../Classes/UserManager';
 import { connect } from 'react-redux';
-import { Text, View, TouchableOpacity } from 'react-native';
-import { navigationProps } from 'src/Interfaces/shortcuts';
-import { IUserProperties as User } from 'src/Redux/types/User';
 import { AppState } from 'src/Redux/store/configureStore';
-import { registrateUser } from '../../Networking/ServerRequest';
+import { Customer, CommonUser } from '../../Classes/User';
+import { navigationProps } from 'src/Interfaces/shortcuts';
 
-interface ILoginScreenProps {
+interface IRegisterScreenProps {
     navigation: navigationProps;
 }
 
-interface ILoginScreenState {
+interface IRegisterScreenState {
 
 }
 
-type Props = ILoginScreenProps & ILinkStateProps
+const um = UserManager.getInstance()
 
-class LoginScreen extends Component<Props, ILoginScreenState> {
+type Props = IRegisterScreenProps & ILinkStateProps
 
-  componentDidMount() {
-    
+class RegisterScreen extends Component<Props, IRegisterScreenState> {
+  state = {
+    isLoading: false
   }
-  
+
+  async register() {
+    let newUser = await um.registrateUser(
+      new Customer(
+          0, 'customer', 
+          'zxcv', 'zxcv', 
+          'zxcv@zxcv.zxcv', 
+          'zxcv', 
+          'zxcv'
+        ), 
+        '123',
+        (isLoading) => this.setState({ isLoading })
+      )
+      let i = newUser.getInfo()
+      this.props.user.setInfo(i.id, i.type, i.image, i.email, i.adress, i.phone, i.name)
+  }
+
   render() {
     const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
-        <TouchableOpacity onPress={() => navigate("Login")}>
+        <Text>This is the RegisterScreen.</Text>
+        {this.state.isLoading ? <ActivityIndicator/> : <></>}
+        <TouchableOpacity onPress={() => navigate("Register")}>
             <Text>
-              Go to Login Screen
+                To login screen
             </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={async () => {
-          let response = await registrateUser('qwer@qwer.qwer','qwer','qwer','qwer','qwer','qwer')
-          console.log(response)
-        }}>
-          <Text>
-            Registrate new user
-          </Text>
+        <TouchableOpacity onPress={() => this.register()}>
+            <Text>
+                Register user
+            </Text>
         </TouchableOpacity>
       </View>
     );
@@ -46,13 +62,13 @@ class LoginScreen extends Component<Props, ILoginScreenState> {
 }
 
 interface ILinkStateProps {
-  user: User
+  user: CommonUser
 }
 
-const mapStateToProps = (state: AppState, ownProps: ILoginScreenProps) : ILinkStateProps => ({
+const mapStateToProps = (state: AppState, ownProps: IRegisterScreenProps): ILinkStateProps => ({
   user: state.user
 })
 
 export default connect(
   mapStateToProps,
-)(LoginScreen)
+)(RegisterScreen)

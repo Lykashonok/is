@@ -1,16 +1,24 @@
-import { IUserProperties as User } from "../types/User";
+import { CommonUser, Customer, Admin, Seller} from "../../Classes/User";
 import { UserActionTypes, SET_USER } from '../types/actions'
 
-const userReducerDefaultState: User = {
-    adress: '', email: '', id: -1, image: '', username: ''
-};
+const userReducerDefaultState: CommonUser = new Customer();
 
-const userReducer = (state = userReducerDefaultState, action: UserActionTypes): User => {
+const userReducer = (state = new Customer(), action: UserActionTypes): CommonUser => {
     switch (action.type) {
         case SET_USER:
-            return {
-                ...action.user
-            }
+            let newUser : CommonUser = action.user;
+            // switch(action.user.type) {
+            //     case 'customer':
+            //         newUser = new Customer()
+            //         break;
+            //     case 'seller':
+            //         newUser = new Seller()
+            //         break;
+            //     case 'admin':
+            //         newUser = new Admin()
+            //         break;
+            // }
+            return newUser
         default:
             return state
     }

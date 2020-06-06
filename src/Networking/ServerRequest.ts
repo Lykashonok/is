@@ -1,4 +1,5 @@
 import { getServerResponse, SERVER_URL } from './ServerRequestBase'
+import { Chat } from '../Classes/Message'
 
 interface Order {}
 interface Item {}
@@ -23,6 +24,7 @@ export interface ResultType {
 
     ordersFindResult?: Order[],
     itemsFindResult?: Item[]
+    chats?: Chat[]
 }
 
 export async function registrateUser(
@@ -33,13 +35,40 @@ export async function registrateUser(
     type: string, 
     name: string
 ) : Promise<ResultType> {
-    let response : ResultType = await getServerResponse('/registrateUser.php', {
-        email, 
-        password, 
-        adress, 
-        phone, 
-        type, 
-        name
+    return await getServerResponse('/registrateUser.php', {
+        email, password, adress, phone, type, name
     })
-    return response
+}
+
+export async function loginUser(
+    email : string, 
+    password: string, 
+) : Promise<ResultType> {
+    return await getServerResponse('/getTokenByEmailAndPassword.php', {
+        email, password
+    })
+}
+
+export async function getUserInfo(
+    id: number
+) : Promise<ResultType> {
+    return await getServerResponse('/getUserInfo.php', {
+        id
+    })
+}
+
+export async function getChatsById(
+    id: number
+) : Promise<ResultType> {
+    return await getServerResponse('/getChatsById.php', {
+        id
+    })
+}
+
+export async function getMessagesById(
+    user1: number, user2: number
+) : Promise<ResultType> {
+    return await getServerResponse('/getMessagesById.php ', {
+        user1, user2
+    })
 }

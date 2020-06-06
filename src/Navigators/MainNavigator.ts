@@ -1,5 +1,4 @@
 import { createStackNavigator, TransitionPresets } from 'react-navigation-stack';
-// import MainListScreen from './TabNavigator';
 import AccountScreen from '../Screens/Main/AccountScreen'
 import ChatListScreen from '../Screens/Main/ChatListScreen'
 import ChatScreen from '../Screens/Main/ChatScreen'
@@ -7,8 +6,13 @@ import OrderListScreen from '../Screens/Main/OrderListScreen'
 import OrderScreen from '../Screens/Main/OrderScreen'
 import ItemListScreen from '../Screens/Main/ItemListScreen'
 import ItemScreen from '../Screens/Main/ItemScreen'
+import MainTabViewScreen from '../Screens/Main/MainTabViewScreen';
+import PreOrderScreen from '../Screens/Main/PreOrder';
 
 const MainNavigator = createStackNavigator({
+    MainTabView : {
+        screen: MainTabViewScreen
+    },
     ChatList : {
         screen: ChatListScreen
     },
@@ -23,6 +27,9 @@ const MainNavigator = createStackNavigator({
     },
     Order : {
         screen: OrderScreen
+    },
+    PreOrder : {
+        screen: PreOrderScreen
     },
     ItemList : {
         screen: ItemListScreen

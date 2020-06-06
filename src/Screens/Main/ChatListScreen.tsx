@@ -6,30 +6,93 @@ import {
     NavigationScreenProp,
     NavigationState,
   } from 'react-navigation';
+import { connect } from 'react-redux';
+import { AppState } from 'src/Redux/store/configureStore';
+import { getMessagesById, getChatsById, ResultType } from '../../Networking/ServerRequest';
+import { Message, Chat } from '../../Classes/Message'
+import { CommonUser } from '../../Classes/User'
+import { AlertManager } from '../../Classes/AlertManager'
 
 interface IChatListScreenProps {
     navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
 
-interface IChatListScreenState {
+type Props = IChatListScreenProps & ILinkStateProps
 
+interface IChatListScreenState {
+  isLoading: boolean,
+  chats: Chat[]
 }
 
-class ChatListScreen extends Component<IChatListScreenProps, IChatListScreenState> {
-  
+class ChatListScreen extends Component<Props, IChatListScreenState> {
+  constructor(props: any) {
+    super(props);
+    this.state = {isLoading: false, chats: []}
+  } 
+
+  public async getChatsById(id: number, activityIndicator? : (value : boolean) => void ) : Promise<Chat[]>{
+    let chats : Chat[] = []
+    console.log('start')
+    try {
+        if (activityIndicator) activityIndicator(true);
+        let response = await getChatsById(this.props.user.getId());
+        if (response.code != 200) throw "Register failed";
+        response.chats!.map(chat => chats.push({id: Number(chat.id), created: Number(chat.created), user1: Number(chat.user1), user2: Number(chat.user2)}))
+        this.setState({chats})
+        console.log(chats)
+        console.log(this.state)
+        // AlertManager.alertHandler.alertWithType('success', "Регистрация", "Пользователь успешно зарегистрирован")
+    } catch {
+        // AlertManager.alertHandler.alertWithType('error', "Регистрация", "Пользователь не зарегистрирован")
+    } finally {
+        if (activityIndicator) activityIndicator(false);
+        console.log('end')
+        return chats;
+    }
+  }
+
+  async componentDidMount() {
+    this.setState({chats: await this.getChatsById(this.props.user.getId(), (isLoading) => this.setState({ isLoading }))})
+  }
+
   render() {
     const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
-        <Text>This is the HomeScreen.</Text>
-        <TouchableOpacity onPress={() => navigate("Register")}>
-            <Text>
-                To login screen
-            </Text>
-        </TouchableOpacity>
+        <Text>This is the ChatList.</Text>
+        <Text>
+          Chats
+        </Text>
+        {
+          this.state.chats.map(chat => 
+            <TouchableOpacity onPress={() => navigate("Chat", { id: chat.id})}>
+              <Text>
+                id of chat - {chat.id}
+              </Text>
+              <Text>
+                id of user 1 - {chat.user1}
+              </Text>
+              <Text>
+                id of user 2 - {chat.user2}
+              </Text>
+              <Text>
+                created Date - {Date(chat.created)}
+              </Text>
+            </TouchableOpacity>
+          )
+        }
       </View>
     );
   }
 }
+interface ILinkStateProps {
+  user: CommonUser
+}
 
-export default ChatListScreen
+const mapStateToProps = (state: AppState, ownProps: IChatListScreenProps): ILinkStateProps => ({
+  user: state.user
+})
+
+export default connect(
+  mapStateToProps,
+)(ChatListScreen)

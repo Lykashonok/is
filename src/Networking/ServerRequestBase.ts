@@ -15,7 +15,7 @@ export async function getServerResponse(url: string, body: object){
     console.log('body and url:',body, SERVER_URL + url)
     let result = {}
 
-    await timeout(30000, fetch(SERVER_URL + url, {
+    await timeout(5000, fetch(SERVER_URL + url, {
         method: 'POST',
         headers: {
             Accept: 'application/json',
@@ -30,6 +30,7 @@ export async function getServerResponse(url: string, body: object){
     .catch((error) => {
         throw "Время ожидания подключения истекло"
     })
-    
+    console.log('response:',result)
+    console.log('serverResponse end');
     return result
 }

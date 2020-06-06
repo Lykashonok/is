@@ -1,9 +1,10 @@
-import { IUserProperties as User } from './User'
+// import { CommonUser as User } from './User'
+import {CommonUser} from '../../Classes/User'
 export const SET_USER = 'SET_USER'
 
 export interface SetUserAction{
     type: typeof SET_USER,
-    user: User
+    user: CommonUser
 }
 
 export type UserActionTypes = SetUserAction // | smthUserAction

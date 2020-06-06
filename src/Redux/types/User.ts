@@ -1,7 +1,9 @@
 export interface IUserProperties {
-    id: number,
-    username: string,
-    image: string,
-    adress: string,
-    email: string,
+    id: number;
+    type: string;
+    image: string;
+    email: string;
+    adress: string;
+    phone: string;
+    name: string;
 }

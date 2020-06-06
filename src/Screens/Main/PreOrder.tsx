@@ -6,32 +6,30 @@ import {
     NavigationScreenProp,
     NavigationState,
   } from 'react-navigation';
-import { Icon } from 'react-native-elements';
 
-interface IAccountScreenProps {
+interface IPreOrderScreenProps {
     navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
 
-interface IAccountScreenState {
+interface IPreOrderScreenState {
 
 }
 
-class AccountScreen extends Component<IAccountScreenProps, IAccountScreenState> {
+class PreOrderScreen extends Component<IPreOrderScreenProps, IPreOrderScreenState> {
   
   render() {
     const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
-        <Text>This is the AccountScreen.</Text>
+        <Text>This is the PreOrderScreen.</Text>
         <TouchableOpacity onPress={() => navigate("Register")}>
             <Text>
                 To login screen
             </Text>
-            <Icon name="rocket"></Icon>
         </TouchableOpacity>
       </View>
     );
   }
 }
 
-export default AccountScreen
+export default PreOrderScreen
