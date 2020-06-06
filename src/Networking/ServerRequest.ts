@@ -1,8 +1,8 @@
 import { getServerResponse, SERVER_URL } from './ServerRequestBase'
-import { Chat } from '../Classes/Message'
+import { Chat, MessageFromDB } from '../Classes/Message'
+import { Item } from '../Classes/Item'
+import { Order } from '../Classes/Order'
 
-interface Order {}
-interface Item {}
 export interface ResultType {
     errorText?: string,
     code?: number,
@@ -23,8 +23,11 @@ export interface ResultType {
     price?: number, 
 
     ordersFindResult?: Order[],
-    itemsFindResult?: Item[]
-    chats?: Chat[]
+    findResult?: Item[],
+    chats?: Chat[],
+    messages? : MessageFromDB[],
+
+    item?: Item 
 }
 
 export async function registrateUser(
@@ -66,9 +69,33 @@ export async function getChatsById(
 }
 
 export async function getMessagesById(
-    user1: number, user2: number
+    id: number
 ) : Promise<ResultType> {
-    return await getServerResponse('/getMessagesById.php ', {
-        user1, user2
+    return await getServerResponse('/getMessagesById.php', {
+        id
+    })
+}
+
+export async function getItemInfo(
+    id: number
+) : Promise<ResultType> {
+    return await getServerResponse('/getItemInfo.php', {
+        id
+    })
+}
+
+export async function sendMessage(
+    chat: number, sender: number, time: number, text: string
+) : Promise<ResultType> {
+    return await getServerResponse('/sendMessage.php', {
+        chat, sender, time, text
+    })
+}
+
+export async function searchRequest(
+    table: string, field: string, value: string
+) : Promise<ResultType> {
+    return await getServerResponse('/findRequest.php', {
+        table, field, value
     })
 }

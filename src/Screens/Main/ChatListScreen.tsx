@@ -7,7 +7,7 @@ import {
     NavigationState,
   } from 'react-navigation';
 import { connect } from 'react-redux';
-import { AppState } from 'src/Redux/store/configureStore';
+import { AppState } from '../../Redux/store/configureStore';
 import { getMessagesById, getChatsById, ResultType } from '../../Networking/ServerRequest';
 import { Message, Chat } from '../../Classes/Message'
 import { CommonUser } from '../../Classes/User'
@@ -32,18 +32,13 @@ class ChatListScreen extends Component<Props, IChatListScreenState> {
 
   public async getChatsById(id: number, activityIndicator? : (value : boolean) => void ) : Promise<Chat[]>{
     let chats : Chat[] = []
-    console.log('start')
     try {
         if (activityIndicator) activityIndicator(true);
         let response = await getChatsById(this.props.user.getId());
         if (response.code != 200) throw "Register failed";
-        response.chats!.map(chat => chats.push({id: Number(chat.id), created: Number(chat.created), user1: Number(chat.user1), user2: Number(chat.user2)}))
+        response.chats!.map(chat => chats.push({id: Number(chat.id), created: Number(chat.created), user1: Number(chat.user1), user2: Number(chat.user2), key: Number(chat.created)}))
         this.setState({chats})
-        console.log(chats)
-        console.log(this.state)
-        // AlertManager.alertHandler.alertWithType('success', "Регистрация", "Пользователь успешно зарегистрирован")
     } catch {
-        // AlertManager.alertHandler.alertWithType('error', "Регистрация", "Пользователь не зарегистрирован")
     } finally {
         if (activityIndicator) activityIndicator(false);
         console.log('end')
@@ -64,21 +59,25 @@ class ChatListScreen extends Component<Props, IChatListScreenState> {
           Chats
         </Text>
         {
-          this.state.chats.map(chat => 
-            <TouchableOpacity onPress={() => navigate("Chat", { id: chat.id})}>
-              <Text>
-                id of chat - {chat.id}
-              </Text>
-              <Text>
-                id of user 1 - {chat.user1}
-              </Text>
-              <Text>
-                id of user 2 - {chat.user2}
-              </Text>
-              <Text>
-                created Date - {Date(chat.created)}
-              </Text>
-            </TouchableOpacity>
+          this.state.chats.map(chat => {
+            let date = new Date(chat.created)
+            return (
+                <TouchableOpacity onPress={() => navigate("Chat", { id: chat.id})}>
+                  <Text>
+                    id of chat - {chat.id}
+                  </Text>
+                  <Text>
+                    id of user 1 - {chat.user1}
+                  </Text>
+                  <Text>
+                    id of user 2 - {chat.user2}
+                  </Text>
+                  <Text>
+                    created Date - {date.toLocaleString()}
+                  </Text>
+                </TouchableOpacity>
+              )
+            }
           )
         }
       </View>

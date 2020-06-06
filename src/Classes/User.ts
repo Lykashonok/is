@@ -1,4 +1,4 @@
-import { Item, ItemEntire } from "./Item";
+import { Item } from "./Item";
 
 export type CommonUser = Customer | Seller | Admin
 
@@ -82,7 +82,7 @@ export class Seller extends User {
         throw new Error("Method not implemented.");
     }
     createItem(): Item {
-        return new ItemEntire('null', 'null');
+        return new Item();
     }
     constructor(id?: number, type?: string, adress?: string, phone?: string, email?: string, image?: string, name?: string) {
         super(id || 0, type || '', image || '', email || '', adress || '', phone || '', name || '');
@@ -97,7 +97,7 @@ export class Admin extends User {
         throw new Error("Method not implemented.");
     }
     createItem(): Item {
-        return new ItemEntire('null', 'null');
+        return new Item();
     }
     constructor(id?: number, type?: string, adress?: string, phone?: string, email?: string, image?: string, name?: string) {
         super(id || 0, type || '', image || '', email || '', adress || '', phone || '', name || '');

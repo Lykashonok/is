@@ -10,6 +10,7 @@ import { Icon } from 'react-native-elements';
 import ChatScreen from './ChatScreen';
 import ChatListScreen from './ChatListScreen';
 import ItemListScreen from './ItemListScreen';
+import OrderListScreen from './OrderListScreen';
 
 const FirstRoute = () => (
     <View style={[{ backgroundColor: '#ff4081', flex: 1 }]} />
@@ -32,8 +33,9 @@ class MainTabViewScreen extends React.Component<IMainTabViewScreenProps, IMainTa
         index: 0,
         routes: [
             { key: 'first', title: 'Find', icon: 'sc-telegram' },
-            { key: 'second', title: 'ChatList', icon: 'cart' },
-            { key: 'third', title: 'Account', icon: 'cart' },
+            { key: 'second', title: 'Chat List', icon: 'cart' },
+            { key: 'third', title: 'Order List', icon: 'cart' },
+            { key: 'fourth', title: 'Account', icon: 'cart' },
         ],
     };
 
@@ -44,13 +46,13 @@ class MainTabViewScreen extends React.Component<IMainTabViewScreenProps, IMainTa
     _renderScene = SceneMap({
         first: () => <ItemListScreen navigation={this.props.navigation}/>,
         second: () => <ChatListScreen navigation={this.props.navigation}/>,
-        third: () => <AccountScreen navigation={this.props.navigation}/>,
+        third: () => <OrderListScreen navigation={this.props.navigation}/>,
+        fourth: () => <AccountScreen navigation={this.props.navigation}/>,
     });
 
     _renderIcon = (route : any) => {
         return (
             <Icon name={route.icon} size={24} color="black"></Icon>
-            // <></>
         );
     };
 
