@@ -1,4 +1,5 @@
 import { Item } from "./Item";
+import { registrateItem, updateItem } from '../Networking/ServerRequest'
 
 export type CommonUser = Customer | Seller | Admin
 
@@ -39,7 +40,6 @@ export abstract class User {
             "adress": this.adress,
             "phone": this.phone,
             "name": this.name,
-
         }
     }
     abstract logIn(): void;
@@ -81,7 +81,27 @@ export class Seller extends User {
     signUp(): void {
         throw new Error("Method not implemented.");
     }
-    createItem(): Item {
+    public async createItem(item: Item, activityIndicator? : (value : boolean) => void ) : Promise<void>{
+        try {
+            if (activityIndicator) activityIndicator(true);
+            let response = await registrateItem(item.stars, item.name, item.description, item.seller_id, item.price, item.image, item.items, item.created_date);
+            if (response.code != 200) throw "Getting messages failed";
+        } catch {
+        } finally {
+            if (activityIndicator) activityIndicator(false);
+        }
+    }
+    public async editItem(item: Item, activityIndicator? : (value : boolean) => void ) : Promise<void>{
+        try {
+            if (activityIndicator) activityIndicator(true);
+            let response = await updateItem(item.id, item.stars, item.name, item.description, item.seller_id, item.price, item.image, item.items, item.created_date);
+            if (response.code != 200) throw "Getting messages failed";
+        } catch {
+        } finally {
+            if (activityIndicator) activityIndicator(false);
+        }
+    }
+    deleteItem(): Item {
         return new Item();
     }
     constructor(id?: number, type?: string, adress?: string, phone?: string, email?: string, image?: string, name?: string) {

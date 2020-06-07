@@ -1,7 +1,7 @@
 import { SET_USER, AppActions } from '../types/actions'
-import { CommonUser as User} from '../../Classes/User'
+import { CommonUser } from '../../Classes/User'
 
-export const setUser = ( user: User ): AppActions => ({
+export const setUser = ( user: CommonUser ): AppActions => ({
     type: SET_USER,
     user
 })

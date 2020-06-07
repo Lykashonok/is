@@ -21,13 +21,20 @@ export interface ResultType {
     created_date?: number,
     seller_id?: number,
     price?: number, 
+    item_id?: number,
+    user_id?: number,
+    finished_date?: number,
+    state?: string,
+
 
     ordersFindResult?: Order[],
     findResult?: Item[],
+    getResult?: any[],
     chats?: Chat[],
     messages? : MessageFromDB[],
 
-    item?: Item 
+    item?: Item,
+    order?: Order
 }
 
 export async function registrateUser(
@@ -92,10 +99,64 @@ export async function sendMessage(
     })
 }
 
-export async function searchRequest(
+export async function findRequest(
     table: string, field: string, value: string
 ) : Promise<ResultType> {
     return await getServerResponse('/findRequest.php', {
         table, field, value
+    })
+}
+
+export async function getRequest(
+    table: string, field: string, value: string | number
+) : Promise<ResultType> {
+    return await getServerResponse('/getRequest.php', {
+        table, field, value
+    })
+}
+
+export async function registrateItem(
+    stars : number,
+    name : string,
+    description : string,
+    seller_id : number,
+    price : number,
+    image : string,
+    items : string,
+    created_date : number,
+) : Promise<ResultType> {
+    return await getServerResponse('/registrateItem.php ', {
+        stars,
+        name,
+        description,
+        seller_id,
+        price,
+        image,
+        items,
+        created_date
+    })
+}
+
+export async function updateItem(
+    id: number,
+    stars : number,
+    name : string,
+    description : string,
+    seller_id : number,
+    price : number,
+    image : string,
+    items : string,
+    created_date : number,
+) : Promise<ResultType> {
+    return await getServerResponse('/updateItem.php ', {
+        id,
+        stars,
+        name,
+        description,
+        seller_id,
+        price,
+        image,
+        items,
+        created_date
     })
 }

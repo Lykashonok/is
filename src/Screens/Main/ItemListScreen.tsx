@@ -1,14 +1,13 @@
 import styles from '../../Styles/main';
 import React, { Component } from 'react';
-import { Text, View, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { Text, View, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { navigationProps } from '../../Interfaces/shortcuts';
 import { SearchBar} from 'react-native-elements'
 import { connect } from 'react-redux';
 import { AppState } from '../../Redux/store/configureStore';
 import { CommonUser } from '../../Classes/User'
 import { Item } from '../../Classes/Item'
-import { FlatList } from 'react-native'
-import { searchRequest } from '../..//Networking/ServerRequest';
+import { findRequest } from '../..//Networking/ServerRequest';
 
 interface IItemListScreenProps {
   navigation: navigationProps;
@@ -45,7 +44,7 @@ class ItemListScreen extends Component<Props, IItemListScreenState> {
     let items : Item[] = []
     try {
         if (activityIndicator) activityIndicator(true);
-        let response = await searchRequest('items', this.state.searchTag, this.state.search);
+        let response = await findRequest('items', this.state.searchTag, this.state.search);
         if (response.code != 200) throw "Register failed";
         // let item = new Item(item.getId(), item.description, item.image, item.stars, item.created_date, item.seller_id, item.name, item.price;
         response.findResult!.forEach((item : any) => {
@@ -61,12 +60,10 @@ class ItemListScreen extends Component<Props, IItemListScreenState> {
   }
 
   async search(e: any) : Promise<void> {
-    console.log(e)
     this.setState({items: await this.findRequest((isLoading) => this.setState({isLoading}))});
   }
 
   updateSearch(search: string) {
-    console.log(search)
     this.setState({search})
   }
 
@@ -84,33 +81,33 @@ class ItemListScreen extends Component<Props, IItemListScreenState> {
           value={search}
           containerStyle={styles.search_bar}
         />
-        {this.state.isLoading ? <ActivityIndicator/> : <></>}
         {
           this.state.items.length == 0 ? <Text>Ничего не найдено</Text> :
-          <ScrollView
+          <FlatList
+            onRefresh={() => this.search(null)}
+            refreshing={this.state.isLoading}
             contentContainerStyle={styles.container}
             style={{flex: 1, width: '100%'}}
-          >
-            {
-              this.state.items.map(item => 
-                <TouchableOpacity 
+            keyExtractor={item => this.state.items.indexOf(item).toString()}
+            data={this.state.items}
+            renderItem={item => (
+              <TouchableOpacity 
                   style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)'}}
                   onPress={ () => {
-                    this.props.navigation.navigate('Item', {id: item.id})
+                    this.props.navigation.navigate('Item', {id: item.item.id})
                   }}
                 >
-                  <Text>{item.getId()}</Text>
-                  <Text>{item.description}</Text>
-                  <Text>{item.created_date}</Text>
-                  <Text>{item.image}</Text>
-                  <Text>{item.name}</Text>
-                  <Text>{item.price}</Text>
-                  <Text>{item.seller_id}</Text>
-                  <Text>{item.stars}</Text>
+                  <Text>{item.item.getId()}</Text>
+                  <Text>{item.item.description}</Text>
+                  <Text>{item.item.created_date}</Text>
+                  <Text>{item.item.image}</Text>
+                  <Text>{item.item.name}</Text>
+                  <Text>{item.item.price}</Text>
+                  <Text>{item.item.seller_id}</Text>
+                  <Text>{item.item.stars}</Text>
                 </TouchableOpacity>
-              )
-            }
-          </ScrollView>
+            )}
+          />
         }
         <TouchableOpacity onPress={() => navigate("Register")}>
             <Text>

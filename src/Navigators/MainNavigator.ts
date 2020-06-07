@@ -8,6 +8,8 @@ import ItemListScreen from '../Screens/Main/ItemListScreen'
 import ItemScreen from '../Screens/Main/ItemScreen'
 import MainTabViewScreen from '../Screens/Main/MainTabViewScreen';
 import PreOrderScreen from '../Screens/Main/PreOrder';
+import ItemsSellerScreen from '../Screens/Main/ItemsSellerScreen'
+import EditItemScreen from '../Screens/Main/EditItemScreen'
 
 const MainNavigator = createStackNavigator({
     MainTabView : {
@@ -37,6 +39,12 @@ const MainNavigator = createStackNavigator({
     Item : {
         screen: ItemScreen
     },
+    ItemsSeller: {
+        screen: ItemsSellerScreen
+    },
+    EditItem: {
+        screen: EditItemScreen
+    }
 }, {
     headerMode: 'none',
     defaultNavigationOptions : {

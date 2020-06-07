@@ -1,6 +1,6 @@
 import styles from '../../Styles/main';
 import React, { Component } from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
+import { Text, View, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import {
     NavigationParams,
     NavigationScreenProp,
@@ -34,7 +34,7 @@ class ChatListScreen extends Component<Props, IChatListScreenState> {
     let chats : Chat[] = []
     try {
         if (activityIndicator) activityIndicator(true);
-        let response = await getChatsById(this.props.user.getId());
+        let response = await getChatsById(id);
         if (response.code != 200) throw "Register failed";
         response.chats!.map(chat => chats.push({id: Number(chat.id), created: Number(chat.created), user1: Number(chat.user1), user2: Number(chat.user2), key: Number(chat.created)}))
         this.setState({chats})
@@ -55,30 +55,38 @@ class ChatListScreen extends Component<Props, IChatListScreenState> {
     return (
       <View style={styles.container}>
         <Text>This is the ChatList.</Text>
-        <Text>
-          Chats
-        </Text>
         {
-          this.state.chats.map(chat => {
-            let date = new Date(chat.created)
-            return (
-                <TouchableOpacity onPress={() => navigate("Chat", { id: chat.id})}>
-                  <Text>
-                    id of chat - {chat.id}
-                  </Text>
-                  <Text>
-                    id of user 1 - {chat.user1}
-                  </Text>
-                  <Text>
-                    id of user 2 - {chat.user2}
-                  </Text>
-                  <Text>
-                    created Date - {date.toLocaleString()}
-                  </Text>
-                </TouchableOpacity>
+          this.state.isLoading ? <ActivityIndicator/>:
+          <Text>
+            Chats
+          </Text>
+        }
+        {
+          this.state.chats.length == 0 && !this.state.isLoading ? <Text>Пока диалогов нет</Text>:
+          <FlatList
+            data={this.state.chats}
+            keyExtractor={chat => this.state.chats.indexOf(chat).toString()}
+            refreshing={this.state.isLoading}
+            onRefresh={() => this.getChatsById(this.props.user.getId(), (isLoading) => this.setState({ isLoading }))}
+            renderItem={chat => (
+              <TouchableOpacity onPress={() => navigate("Chat", { id: chat.item.id})}>
+                <Text>
+                  id of chat - {chat.item.id}
+                </Text>
+                <Text>
+                  id of user 1 - {chat.item.user1}
+                </Text>
+                <Text>
+                  id of user 2 - {chat.item.user2}
+                </Text>
+                <Text>
+                  created Date - {(new Date(chat.item.created)).toLocaleString()}
+                </Text>
+              </TouchableOpacity>
               )
             }
-          )
+          />
+          
         }
       </View>
     );
