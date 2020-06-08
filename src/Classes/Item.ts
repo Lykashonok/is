@@ -38,8 +38,22 @@ export class Item extends Component {
 
     public operation(): string {
         return JSON.stringify(
-            {}
+            this.getInfo()
         );
+    }
+
+    getInfo(): {id: number, description: string, image: string, stars: number, created_date: number, seller_id: number, name: string, price: number, items: string} {
+        return {
+            id: this.id,
+            description: this.description,
+            image: this.image,
+            seller_id: this.seller_id,
+            stars: this.stars,
+            name: this.name,
+            price: this.price,
+            created_date: this.created_date,
+            items: this.items
+        }
     }
 
     constructor(id?: number, description?: string, image?: string, stars?: number, created_date?: number, seller_id?: number, name?: string, price?: number, items?: string) {
@@ -56,7 +70,7 @@ export class Item extends Component {
     }
 }
 
-export class CompositeItem extends Component {
+export class CompositeItem extends Item {
     protected children: Component[] = [];
 
     public add(component: Component): void {
@@ -80,7 +94,7 @@ export class CompositeItem extends Component {
         for (const child of this.children) {
             results.push(child.operation());
         }
-        return `Branch(${results.join('+')})`;
+        return `[${results.join(',')}]`;
     }
 
     constructor() {

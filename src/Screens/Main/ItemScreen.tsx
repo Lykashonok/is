@@ -52,9 +52,6 @@ class ItemScreen extends Component<Props, IItemScreenState> {
   render() {
     return (
       <View style={styles.container}>
-        {/* <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
-            
-        </TouchableOpacity> */}
         {
           this.state.isLoading ? <ActivityIndicator/> :
           <View>

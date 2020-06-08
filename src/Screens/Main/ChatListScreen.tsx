@@ -41,7 +41,6 @@ class ChatListScreen extends Component<Props, IChatListScreenState> {
     } catch {
     } finally {
         if (activityIndicator) activityIndicator(false);
-        console.log('end')
         return chats;
     }
   }
@@ -67,7 +66,7 @@ class ChatListScreen extends Component<Props, IChatListScreenState> {
             data={this.state.chats}
             keyExtractor={chat => this.state.chats.indexOf(chat).toString()}
             refreshing={this.state.isLoading}
-            onRefresh={() => this.getChatsById(this.props.user.getId(), (isLoading) => this.setState({ isLoading }))}
+            onRefresh={async () => this.setState({chats: await this.getChatsById(this.props.user.getId(), (isLoading) => this.setState({ isLoading }))})}
             renderItem={chat => (
               <TouchableOpacity onPress={() => navigate("Chat", { id: chat.item.id})}>
                 <Text>

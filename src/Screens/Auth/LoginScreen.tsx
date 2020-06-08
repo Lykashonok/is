@@ -7,7 +7,7 @@ import { navigationProps } from 'src/Interfaces/shortcuts';
 import { Customer, CommonUser, User } from '../../Classes/User';
 import { AlertManager } from '../../Classes/AlertManager';
 import { UserManager } from '../../Classes/UserManager';
-import { Item, CompositeItem } from '../../Classes/Item';
+import { Order, Caretaker } from '../../Classes/Order';
 import { ThunkDispatch } from 'redux-thunk';
 import { AppActions, UserActionTypes } from '../../Redux/types/actions';
 import { setUser } from '../../Redux/Actions/user';
@@ -30,6 +30,7 @@ class LoginScreen extends Component<Props, ILoginScreenState> {
     isLoading: false,
   }
   async componentDidMount() {
+
   }
 
   render() {
@@ -37,7 +38,7 @@ class LoginScreen extends Component<Props, ILoginScreenState> {
     return (
       <View style={styles.container}>
         <TouchableOpacity onPress={async () => {
-          let newUser = await um.loginUser('E', 'e', (isLoading) => this.setState({ isLoading }))
+          let newUser = await um.loginUser('P', 'p', (isLoading) => this.setState({ isLoading }))
           this.props.setUser(newUser)
           console.log(this.props.user.getId())
           if (this.props.user.getId()) navigate("MainTabView")
@@ -50,27 +51,6 @@ class LoginScreen extends Component<Props, ILoginScreenState> {
         <TouchableOpacity onPress={() => navigate("Register")}>
           <Text>
             Register
-            </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => {
-          let item: Item = new Item(1, 'biba')
-          let item2: Item = new Item(2, 'boba')
-          let item3: Item = new Item(3, 'lalal')
-          let complicated: CompositeItem = new CompositeItem()
-          complicated.add(item)
-          complicated.add(item2)
-          let complicated2: CompositeItem = new CompositeItem()
-          complicated2.add(item3)
-          complicated2.add(complicated)
-          console.log(item)
-          console.log(item2)
-          console.log(item3)
-          console.log(complicated)
-          console.log(complicated2)
-        }}>
-          <Text>
-            Test
             </Text>
         </TouchableOpacity>
       </View>

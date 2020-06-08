@@ -31,6 +31,7 @@ export interface ResultType {
     findResult?: Item[],
     getResult?: any[],
     chats?: Chat[],
+    chat?: Chat,
     messages? : MessageFromDB[],
 
     item?: Item,
@@ -158,5 +159,43 @@ export async function updateItem(
         image,
         items,
         created_date
+    })
+}
+
+export async function changeOrderStateById(
+    id: number,
+    state : string,
+) : Promise<ResultType> {
+    return await getServerResponse('/changeOrderStateById.php ', {
+        id,
+        state,
+    })
+}
+
+export async function registrateChat(
+    user1: number,
+    user2: number,
+) : Promise<ResultType> {
+    return await getServerResponse('/registrateChat.php ', {
+        user1,
+        user2,
+    })
+}
+
+export async function registrateOrder(
+    id: number | -1,
+    item_id: number,
+    user_id: number,
+    seller_id: number, 
+    created_date: number,
+    state: string,
+) : Promise<ResultType> {
+    return await getServerResponse('/registrateOrder.php ', {
+        id,
+        item_id,
+        user_id,
+        seller_id,
+        created_date,
+        state,
     })
 }

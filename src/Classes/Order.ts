@@ -1,26 +1,4 @@
-abstract class Component {
-    protected parent: Component | null = null;
-
-    public setParent(parent: Component | null) {
-        this.parent = parent;
-    }
-
-    public getParent(): Component {
-        return this.parent!;
-    }
-
-    public add(component: Component): void { }
-
-    public remove(component: Component): void { }
-
-    public isComposite(): boolean {
-        return false;
-    }
-
-    public abstract operation(): string;
-}
-
-export class Order extends Component {
+export class Order implements Memento {
     id: number;
     item_id: number;
     user_id: number;
@@ -29,25 +7,18 @@ export class Order extends Component {
     finished_date: number;
     state: string;
 
+    private mementoState: Order | null = null;
+
     getId(): number {
         return this.id;
     }
-    public operation(): string {
-        return JSON.stringify(this.getInfo());
+    
+    getInfo(): Order {
+        return this
     }
-    getInfo(): { id: number, item_id: number, user_id: number, seller_id: number, created_date: number, finished_date: number, state: string } {
-        return {
-            "id": this.id,
-            "item_id": this.item_id,
-            "user_id": this.user_id,
-            "seller_id": this.seller_id,
-            "created_date": this.created_date,
-            "finished_date": this.finished_date,
-            "state": this.state
-        }
-    }
-    constructor(id?: number, item_id?: number, user_id?: number, seller_id?: number, created_date?: number, finished_date?: number, state?: string) {
-        super()
+    constructor(id?: number, item_id?: number, user_id?: number, seller_id?: number, created_date?: number, finished_date?: number, state?: string, mementoState?: Order) {
+        if (mementoState)
+            this.mementoState = new Order(id, item_id, user_id, seller_id, created_date, finished_date, state)
         this.id = id || 0;
         this.item_id = item_id || 0;
         this.user_id = user_id || 0;
@@ -56,41 +27,86 @@ export class Order extends Component {
         this.finished_date = finished_date || 0;
         this.state = state || '';
     }
+
+    public save(): Memento {
+        return new ConcreteMemento(this.mementoState!);
+    }
+
+    public restore(memento: Memento): void {
+        this.mementoState = memento.getState();
+        // console.log(`Originator: My state has changed to: ${this.state}`);
+    }
+
+    getState(): Order {
+        return this.mementoState!
+    }
+    getName(): string {
+        return this.state
+    }
+    getDate(): string {
+        return Date()
+    }
+    
 }
 
-class CompositeOrder extends Component {
-    protected children: Component[] = [];
+interface Memento {
+    getState(): Order;
 
-    public add(component: Component): void {
-        this.children.push(component);
-        component.setParent(this);
+    getInfo(): Order;
+
+    getDate(): string;
+}
+
+class ConcreteMemento implements Memento {
+    private state: Order;
+
+    private date: string;
+
+    constructor(state: Order) {
+        this.state = state;
+        this.date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    }
+    public getState(): Order {
+        return this.state;
+    }
+    public getInfo(): Order {
+        return this.state.getInfo();
     }
 
-    public remove(component: Component): void {
-        const componentIndex = this.children.indexOf(component);
-        this.children.splice(componentIndex, 1);
+    public getDate(): string {
+        return this.date;
+    }
+}
 
-        component.setParent(null);
+export class Caretaker {
+    private mementos: Memento[] = [];
+
+    private originator: Order;
+
+    constructor(originator: Order) {
+        this.originator = originator;
     }
 
-    public isComposite(): boolean {
-        return true;
+    public backup(): void {
+        // console.log('\nCaretaker: Saving Originator\'s state...');
+        this.mementos.push(this.originator.save());
     }
 
-    public operation(): string {
-        const results = [];
-        for (const child of this.children) {
-            results.push(child.operation());
+    public undo(): Order | void {
+        if (!this.mementos.length) {
+            return;
         }
-        return `Branch(${results.join('+')})`;
+        const memento = this.mementos.pop();
+
+        // console.log(`Caretaker: Resto/ring state to: ${memento!.getInfo()}`);
+        this.originator.restore(memento!);
+        return this.originator
+    }
+
+    public showHistory(): void {
+        // console.log('Caretaker: Here\'s the list of mementos:');
+        for (const memento of this.mementos) {
+            console.log(memento.getInfo());
+        }
     }
 }
-
-const tree = new CompositeOrder();
-const branch1 = new CompositeOrder();
-branch1.add(new Order());
-branch1.add(new Order());
-const branch2 = new CompositeOrder();
-branch2.add(new Order());
-tree.add(branch1);
-tree.add(branch2);

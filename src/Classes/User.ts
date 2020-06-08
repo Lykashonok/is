@@ -1,5 +1,5 @@
-import { Item } from "./Item";
 import { registrateItem, updateItem } from '../Networking/ServerRequest'
+import { CompositeItem, Item} from './Item'
 
 export type CommonUser = Customer | Seller | Admin
 
@@ -101,6 +101,28 @@ export class Seller extends User {
             if (activityIndicator) activityIndicator(false);
         }
     }
+    public async createCompositeItem(newItem: Item, pickers: {index: number, id: number}[], items: Item[], activityIndicator? : (value : boolean) => void ) : Promise<void>{
+        try {
+            if (activityIndicator) activityIndicator(true);
+            let item = new CompositeItem()
+            item.image = newItem.image
+            item.items = newItem.items
+            item.name = newItem.name
+            item.price = newItem.price
+            item.seller_id = this.getId()
+            item.stars = newItem.stars
+            for (let picker of pickers) {
+                item.add(items.filter(item => item.id == Number(picker.id))[0])
+            }
+            item.items = item.operation()
+            let response = await registrateItem(item.stars, item.name, item.description, item.seller_id, item.price, item.image, item.items, item.created_date);
+            if (response.code != 200) throw "Create composite failed";
+        } catch {
+        } finally {
+            if (activityIndicator) activityIndicator(false);
+        }
+    }
+    // return await (this.props.user as Seller).createCompositeItem(this.state.pickers, this.state.items, (isLoading: boolean) => this.setState({isLoading}))
     deleteItem(): Item {
         return new Item();
     }

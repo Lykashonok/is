@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { AppState } from '../../Redux/store/configureStore';
 import { CommonUser } from '../../Classes/User'
 import { Item } from '../../Classes/Item'
-import { getRequest } from '../../Networking/ServerRequest';
+import { getRequest, getItemInfo } from '../../Networking/ServerRequest';
 
 interface IItemsSellerScreenProps {
   navigation: navigationProps;
@@ -19,6 +19,7 @@ interface IItemsSellerScreenState {
   search: string,
   items: Item[],
   isLoading: boolean
+  currentInnerItems: Item[]
 }
 
 class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
@@ -27,7 +28,8 @@ class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
     this.state = {
       search: '',
       items: [],
-      isLoading: false
+      isLoading: false,
+      currentInnerItems: []
     };
   }
 
@@ -38,13 +40,27 @@ class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
         let response = await getRequest('items', 'seller_id', Number(id));
         if (response.code != 200) throw "getRequest item failed";
         response.getResult!.forEach((item : any) => {
-          let currentItem = new Item(item.id, item.description, item.image, item.stars, item.created_date, item.seller_id, item.name, item.price);
+          let currentItem = new Item(item.id, item.description, item.image, item.stars, item.created_date, item.seller_id, item.name, item.price, item.items);
           items.push(currentItem)
         });
     } catch {
     } finally {
         if (activityIndicator) activityIndicator(false);
         return items;
+    }
+  }
+
+  public async getItemInfo(id: number, activityIndicator? : (value : boolean) => void ) : Promise<Item>{
+    let item : Item = new Item();
+    try {
+        if (activityIndicator) activityIndicator(true);
+        let response = await getItemInfo(id);
+        if (response.code != 200) throw "getItemInfo failed";
+        item = response.item!
+    } catch {
+    } finally {
+        if (activityIndicator) activityIndicator(false);
+        return item;
     }
   }
 
@@ -58,7 +74,7 @@ class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
         <TouchableOpacity
           style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)'}}
           onPress={ () => {
-            this.props.navigation.navigate('EditItem')
+            this.props.navigation.navigate('EditItem', {items: this.state.items})
           }}
         >
           <Text>
@@ -68,29 +84,62 @@ class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
         {
           this.state.items.length == 0 ? <Text>Ничего не найдено</Text> :
           <FlatList
-            contentContainerStyle={[styles.container]}
+            contentContainerStyle={[{padding: 25}]}
             style={{flex: 1, width: '100%'}}
             refreshing={this.state.isLoading}
-            onRefresh={() => this.getRequest(this.props.user.getId(),(isLoading) => this.setState({isLoading}))}
+            onRefresh={async () => this.setState({items: await this.getRequest(this.props.user.getId(),(isLoading) => this.setState({isLoading}))})}
             keyExtractor={item => this.state.items.indexOf(item).toString()}
             data={this.state.items}
-            renderItem={item => (
-              <TouchableOpacity 
-                  style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)'}}
-                  onPress={ () => {
-                    this.props.navigation.navigate('EditItem', {item: item.item})
-                  }}
-                >
-                  <Text>{item.item.getId()}</Text>
-                  <Text>{item.item.description}</Text>
-                  <Text>{item.item.created_date}</Text>
-                  <Text>{item.item.image}</Text>
-                  <Text>{item.item.name}</Text>
-                  <Text>{item.item.price}</Text>
-                  <Text>{item.item.seller_id}</Text>
-                  <Text>{item.item.stars}</Text>
-                </TouchableOpacity>
-            )}
+            renderItem={item => {
+              console.info(item.item.items)
+              return (
+                <TouchableOpacity 
+                    style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)', padding: 25, marginVertical: 5}}
+                    onPress={ () => {
+                      this.props.navigation.navigate('EditItem', {item: item.item, items: this.state.items})
+                    }}
+                  >
+                    <Text>{item.item.getId()}</Text>
+                    <Text>{item.item.description}</Text>
+                    <Text>{item.item.created_date}</Text>
+                    <Text>{item.item.image}</Text>
+                    <Text>{item.item.name}</Text>
+                    <Text>{item.item.price}</Text>
+                    <Text>{item.item.seller_id}</Text>
+                    <Text>{item.item.stars}</Text>
+                    {
+                      item.item.items == '' ? <></> :
+                      <View>
+                        <Text>Включает в себя:</Text>
+                        {
+                          (JSON.parse(item.item.items) as Item[]).map((raw) => {
+                            let itemList = this.state.items.filter(item => item.id == raw.id)
+                            if (itemList.length = 0) return <Text>Этот предмет удалён</Text>
+                            let item = this.state.items.filter(item => item.id == raw.id)[0]
+                            return (
+                              <TouchableOpacity
+                                onPress={ () => {
+                                  this.props.navigation.navigate('EditItem', {items: this.state.items, item})
+                                }}
+                                style={{backgroundColor: 'rgba(255,130,10,0.5)', padding: 20, marginVertical: 5}}
+                              >
+                                <Text>{item.id}</Text>
+                                <Text>{item.description}</Text>
+                                <Text>{item.created_date}</Text>
+                                <Text>{item.image}</Text>
+                                <Text>{item.name}</Text>
+                                <Text>{item.price}</Text>
+                                <Text>{item.seller_id}</Text>
+                                <Text>{item.stars}</Text>
+                              </TouchableOpacity>
+                            )
+                          })
+                        }
+                      </View>
+                    }
+                  </TouchableOpacity>
+              )
+            }}
           />
         }
       </View>

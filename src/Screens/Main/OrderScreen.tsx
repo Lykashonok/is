@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { AppState } from '../../Redux/store/configureStore';
 import { CommonUser } from '../../Classes/User'
 import { Order } from '../../Classes/Order'
-import { getRequest } from '../../Networking/ServerRequest';
+import { getRequest, changeOrderStateById, registrateChat } from '../../Networking/ServerRequest';
 
 interface IOrderScreenProps {
   navigation: navigationProps;
@@ -39,11 +39,39 @@ class OrderScreen extends Component<Props, IOrderScreenState> {
         if (response.code != 200) throw "getRequest order failed";
         response = response.getResult![0]
         order = new Order(Number(response.id!), Number(response.item_id!), Number(response.user_id!), Number(response.seller_id!), Number(response.created_date!), Number(response.finished_date!), response.state!)
-        console.log('poooo', order)
     } catch {
     } finally {
         if (activityIndicator) activityIndicator(false);
         return order;
+    }
+  }
+
+  public async changeOrderStateById(id: number, state: string, activityIndicator? : (value : boolean) => void ) : Promise<void>{
+    try {
+        if (activityIndicator) activityIndicator(true);
+        let response = await changeOrderStateById(id, state);
+        if (response.code != 200) throw "changeOrderStateById order failed";
+    } catch {
+    } finally {
+        if (activityIndicator) activityIndicator(false);
+    }
+  }
+
+  public async createOrGoToChat(id: number, activityIndicator? : (value : boolean) => void ) : Promise<number>{
+    let chatId: number = 0;
+    try {
+      if (activityIndicator) activityIndicator(true);
+      let response = await registrateChat(id, this.props.user.getId());
+      if (response.code != 200) throw "changeOrderStateById order failed";
+      if (response.chat) {
+        chatId = response.chat.id
+      } else {
+        chatId = response.id!
+      }
+    } catch {
+    } finally {
+      if (activityIndicator) activityIndicator(false);
+      return chatId;
     }
   }
 
@@ -54,9 +82,6 @@ class OrderScreen extends Component<Props, IOrderScreenState> {
   render() {
     return (
       <View style={styles.container}>
-        {/* <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
-            
-        </TouchableOpacity> */}
         <Text>Order detail</Text>
         {
           this.state.order ? this.state.isLoading ? <ActivityIndicator/> :
@@ -71,6 +96,38 @@ class OrderScreen extends Component<Props, IOrderScreenState> {
             <Text>{this.state.order!.item_id}</Text>
           </View> : <></>
         }
+        <TouchableOpacity
+          onPress={async () => {
+            await this.changeOrderStateById(this.state.order!.id, 'confirmed', (isLoading) => this.setState({isLoading}))
+            this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
+          }}
+        >
+          <Text>SET CONFIRMED</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={async () => {
+            await this.changeOrderStateById(this.state.order!.id, 'sended', (isLoading) => this.setState({isLoading}))
+            this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
+          }}
+        >
+          <Text>SET SENDED</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={async () => {
+            await this.changeOrderStateById(this.state.order!.id, 'rejected', (isLoading) => this.setState({isLoading}))
+            this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
+          }}
+        >
+          <Text>SET REJECTED</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={async () => {
+            console.log('pressed')
+            this.props.navigation.navigate("Chat", { id: await this.createOrGoToChat(this.state.order!.user_id, (isLoading) => this.setState({isLoading}))})
+          }}
+        >
+          <Text>GO TO CHAT</Text>
+        </TouchableOpacity>
       </View>
     );
   }

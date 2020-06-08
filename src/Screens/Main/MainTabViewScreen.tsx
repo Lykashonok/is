@@ -46,7 +46,9 @@ const sceneMap = (navigation:any, type: string): any => {
             return SceneMap({
                 first: () => <ItemListScreen navigation={navigation}/>,
                 second: () => <ItemsSellerScreen navigation={navigation}/>,
-                fourth: () => <AccountScreen navigation={navigation}/>,
+                third: () => <ChatListScreen navigation={navigation}/>,
+                fourth: () => <OrderListScreen navigation={navigation}/>,
+                fifth: () => <AccountScreen navigation={navigation}/>,
             })
         default:
             return SceneMap({
@@ -68,7 +70,9 @@ const routes = (type: string) => {
             return [
                 { key: 'first', title: 'Find', icon: 'sc-telegram' },
                 { key: 'second', title: 'Items', icon: 'sc-telegram' },
-                { key: 'fourth', title: 'Account', icon: 'cart' },
+                { key: 'third', title: 'Chat List', icon: 'cart' },
+                { key: 'fourth', title: 'Order List', icon: 'cart' },
+                { key: 'fifth', title: 'Account', icon: 'cart' },
             ]
         default:
             return [
@@ -96,7 +100,7 @@ class MainTabViewScreen extends React.Component<Props, IMainTabViewScreenState> 
     };
 
     componentDidMount() {
-        // this._renderScene = 
+        
     }
 
     render() {

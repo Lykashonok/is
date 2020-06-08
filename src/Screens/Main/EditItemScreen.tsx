@@ -7,7 +7,7 @@ import { AppState } from '../../Redux/store/configureStore';
 import { CommonUser, Seller, Customer } from '../../Classes/User'
 import { Item } from '../../Classes/Item'
 import { getItemInfo } from '../../Networking/ServerRequest';
-import { UserManager } from '../../Classes/UserManager';
+import { Picker } from '@react-native-community/picker';
 
 interface IEditItemScreenProps {
   navigation: navigationProps;
@@ -20,7 +20,10 @@ interface IEditItemScreenState {
   item: Item | null,
   isLoading: boolean,
   itemState: 'item' | 'composite',
-  editState: 'edit' | 'create'
+  editState: 'edit' | 'create',
+  lastSelected: string,
+  items: Item[],
+  pickers: {index: number, id: number}[],
 }
 
 class EditItemScreen extends Component<Props, IEditItemScreenState> {
@@ -31,7 +34,10 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
       item: null,
       isLoading: false,
       itemState: 'item',
-      editState: 'create'
+      editState: 'create',
+      lastSelected: '',
+      pickers: [],
+      items: [],
     };
   }
 
@@ -50,15 +56,16 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
   }
 
   async componentDidMount() {
-    let param = this.props.navigation.state.params
-    if (!param) {
-        this.setState({item: new Item(), editState: 'create'})
+    
+    let item = this.props.navigation.state.params!.item
+    if (!item) {
+        this.setState({item: new Item(), editState: 'create', items: this.props.navigation.state.params!.items})
     } else {
-        this.setState({item: param.item, editState: 'edit'})
-        if (param.item.items && param.item.items != '') {
-            this.setState({itemState: 'composite'})
+        this.setState({item, editState: 'edit', items: this.props.navigation.state.params!.items})
+        if (item.items && item.items != '') {
+          this.setState({itemState: 'composite'})
         } else {
-            this.setState({itemState: 'item'})
+          this.setState({itemState: 'item'})
         }
     }
   }
@@ -70,20 +77,16 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
             this.state.editState == 'edit' ? <></> :
             <View>
                 <TouchableOpacity
-                    onPress={()=> this.setState({itemState: 'composite'})}
-                    style={
-                        this.state.itemState == 'composite' ? {opacity: 0.4} : {}
-                    }
+                    onPress={()=> {this.setState({itemState: 'item'})}}
+                    style={[this.state.itemState == 'item' ? {backgroundColor: 'rgba(0,0,0,0.3)'} : {backgroundColor: 'rgba(0,0,0,0.0)'},]}
                 >
-                    Обычный
+                    <Text>Обычный</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    onPress={()=> this.setState({itemState: 'item'})}
-                    style={
-                        this.state.itemState == 'item' ? {opacity: 0.4} : {}
-                    }
+                    onPress={()=> {this.setState({itemState: 'composite'})}}
+                    style={[this.state.itemState == 'item' ? {backgroundColor: 'rgba(0,0,0,0.0)'} : {backgroundColor: 'rgba(0,0,0,0.3)'},]}
                 >
-                    Составной
+                    <Text>Составной</Text>
                 </TouchableOpacity>
             </View>
 
@@ -101,7 +104,9 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
             <Text>{this.state.item?.created_date}</Text>
           </View>
         }
-        <TouchableOpacity
+        {
+          this.state.itemState == "item" ?
+          <TouchableOpacity
             onPress={async () => {
                 if (this.state.item)
                     switch(this.state.editState) {
@@ -111,17 +116,58 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
                             return await (this.props.user as Seller).createItem(new Item(0, 'New Cool item', 'qwerqwer', 4, 123, Number(this.props.user.getId()), 'Park', 123, ''), (isLoading) => this.setState({isLoading}))
                     }
             }}
-        >
+          >
             {
                 this.state.editState == 'edit' ? 
                 <Text>EDIT THIS</Text> : <Text>CREATE NEW</Text>
             }
-        </TouchableOpacity>
+          </TouchableOpacity> : 
+          <View>
+            <TouchableOpacity onPress={() => {
+              let tmp = this.state.pickers
+              tmp.length < 10 ? tmp.push({index: tmp.length, id: this.props.navigation.state.params!.items[0].id}) : null
+              this.setState({pickers: tmp})
+              this.forceUpdate()
+            }}>
+              <Text>Увеличить количество предметов</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+              this.state.pickers.length > 1 ? this.state.pickers.pop() : null
+              this.forceUpdate()
+            }}>
+              <Text>Уменьшить количество предметов</Text>
+            </TouchableOpacity>
+            {
+              this.state.pickers.map(picker => 
+                <Picker
+                  selectedValue={this.state.items.filter(item => item.id == picker.id)[0].id}
+                  style={{height: 50, width: 250}}
+                  onValueChange={(itemValue, itemIndex) => {
+                    let tmp = this.state.pickers
+                    tmp[picker.index].id = Number(itemValue)
+                    this.setState({pickers: tmp})
+                  }}>
+                    {
+                      this.state.items.filter(item => item.items == '').map(item => <Picker.Item label={item.name == '' ? 'Без имени' : item.name} value={item.id}/>)
+                    }
+                </Picker>
+              )
+            }
+            <TouchableOpacity
+              onPress={async () => {
+                return await (this.props.user as Seller).createCompositeItem(this.state.item!, this.state.pickers, this.state.items, (isLoading: boolean) => this.setState({isLoading}))
+              }}
+            >
+              {
+                <Text>CREATE COMPOSITE</Text>
+              }
+            </TouchableOpacity>
+          </View>
+        }
       </View>
     );
   }
 }
-
 
 interface ILinkStateProps {
   user: CommonUser
