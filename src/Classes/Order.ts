@@ -7,7 +7,7 @@ export class Order implements Memento {
     finished_date: number;
     state: string;
 
-    private mementoState: Order | null = null;
+    public mementoState: Order | null = null;
 
     getId(): number {
         return this.id;
@@ -29,12 +29,13 @@ export class Order implements Memento {
     }
 
     public save(): Memento {
+        console.log('saving memento state', this.mementoState!)
         return new ConcreteMemento(this.mementoState!);
     }
 
     public restore(memento: Memento): void {
         this.mementoState = memento.getState();
-        // console.log(`Originator: My state has changed to: ${this.state}`);
+        console.log(`Originator: My state has changed to: ${this.state}`);
     }
 
     getState(): Order {
@@ -85,10 +86,16 @@ export class Caretaker {
 
     constructor(originator: Order) {
         this.originator = originator;
+        this.originator.mementoState = originator.mementoState
     }
 
-    public backup(): void {
-        // console.log('\nCaretaker: Saving Originator\'s state...');
+    public registrateOriginator(originator: Order) {
+        this.originator = originator;
+        this.originator.mementoState = originator.mementoState
+    }
+
+    public backup(order?: Order): void {
+        console.log('\nCaretaker: Saving Originator\'s state...');
         this.mementos.push(this.originator.save());
     }
 
@@ -98,13 +105,13 @@ export class Caretaker {
         }
         const memento = this.mementos.pop();
 
-        // console.log(`Caretaker: Resto/ring state to: ${memento!.getInfo()}`);
+        console.log(`Caretaker: Resto/ring state to: ${memento!.getInfo()}`);
         this.originator.restore(memento!);
         return this.originator
     }
 
     public showHistory(): void {
-        // console.log('Caretaker: Here\'s the list of mementos:');
+        console.log('Caretaker: Here\'s the list of mementos:');
         for (const memento of this.mementos) {
             console.log(memento.getInfo());
         }

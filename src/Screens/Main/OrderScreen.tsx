@@ -8,6 +8,8 @@ import { AppState } from '../../Redux/store/configureStore';
 import { CommonUser } from '../../Classes/User'
 import { Order } from '../../Classes/Order'
 import { getRequest, changeOrderStateById, registrateChat } from '../../Networking/ServerRequest';
+import AirButton from '../../Components/AirButton';
+import { AlertManager } from '../../Classes/AlertManager';
 
 interface IOrderScreenProps {
   navigation: navigationProps;
@@ -51,7 +53,9 @@ class OrderScreen extends Component<Props, IOrderScreenState> {
         if (activityIndicator) activityIndicator(true);
         let response = await changeOrderStateById(id, state);
         if (response.code != 200) throw "changeOrderStateById order failed";
+        AlertManager.alertHandler.alertWithType('success','Состояния заказа изменилось!', '')
     } catch {
+        AlertManager.alertHandler.alertWithType('error','Изменить заказ не получилось', 'Попробуйте ещё раз')
     } finally {
         if (activityIndicator) activityIndicator(false);
     }
@@ -81,53 +85,49 @@ class OrderScreen extends Component<Props, IOrderScreenState> {
 
   render() {
     return (
-      <View style={styles.container}>
-        <Text>Order detail</Text>
-        {
-          this.state.order ? this.state.isLoading ? <ActivityIndicator/> :
-          <View>
-            <Text>{this.state.order!.id}</Text>
-            <Text>{this.state.order!.created_date}</Text>
-            <Text>{this.state.order!.finished_date}</Text>
-            <Text>{this.state.order!.state}</Text>
-            <Text>{this.state.order!.seller_id}</Text>
-            <Text>{this.state.order!.user_id}</Text>
-            <Text>{this.state.order!.seller_id}</Text>
-            <Text>{this.state.order!.item_id}</Text>
-          </View> : <></>
-        }
-        <TouchableOpacity
-          onPress={async () => {
-            await this.changeOrderStateById(this.state.order!.id, 'confirmed', (isLoading) => this.setState({isLoading}))
-            this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
-          }}
-        >
-          <Text>SET CONFIRMED</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={async () => {
-            await this.changeOrderStateById(this.state.order!.id, 'sended', (isLoading) => this.setState({isLoading}))
-            this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
-          }}
-        >
-          <Text>SET SENDED</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={async () => {
-            await this.changeOrderStateById(this.state.order!.id, 'rejected', (isLoading) => this.setState({isLoading}))
-            this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
-          }}
-        >
-          <Text>SET REJECTED</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={async () => {
-            console.log('pressed')
-            this.props.navigation.navigate("Chat", { id: await this.createOrGoToChat(this.state.order!.user_id, (isLoading) => this.setState({isLoading}))})
-          }}
-        >
-          <Text>GO TO CHAT</Text>
-        </TouchableOpacity>
+      <View style={{flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20}}>
+        <View style={{height: 67, width: '100%', borderBottomColor: 'purple', alignItems: 'center', justifyContent:'center'}}>
+        <Text style={[styles.purple, styles.header]}>Заказ</Text>
+        </View>
+        <View style={{
+            backgroundColor: 'white',
+            width: '100%', marginVertical: 5, padding: 20,
+            borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+          }}>
+          {
+            this.state.order ? this.state.isLoading ? <ActivityIndicator/> :
+            <View style={{alignSelf: 'center', margin: 20}}>
+              <Text style={{fontSize: 20}}>id заказа: {this.state.order!.id}</Text>
+              <Text style={{fontSize: 20}}>id продавца: {this.state.order!.seller_id}</Text>
+              <Text style={{fontSize: 20}}>id пользователя: {this.state.order!.user_id}</Text>
+              <Text style={{fontSize: 20}}>id товара: {this.state.order!.item_id}</Text>
+              <Text style={{fontSize: 20}}>Состояние: {this.state.order!.state}</Text>
+            </View> : <></>
+          }
+
+          {
+            this.props.user.getInfo().type == "seller" ? 
+            <View>
+              <View style={{alignSelf: 'center'}}>
+                <AirButton onPressHandler={async () => {
+                  await this.changeOrderStateById(this.state.order!.id, 'confirmed', (isLoading) => this.setState({isLoading}))
+                  this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
+                }} width={200} text="Принято"/>
+              </View>
+              <View style={{alignSelf: 'center'}}><AirButton onPressHandler={async () => {
+                  await this.changeOrderStateById(this.state.order!.id, 'sended', (isLoading) => this.setState({isLoading}))
+                  this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
+                }} width={200} text="Отправлено"/></View>
+              <View style={{alignSelf: 'center'}}><AirButton onPressHandler={async () => {
+                  await this.changeOrderStateById(this.state.order!.id, 'rejected', (isLoading) => this.setState({isLoading}))
+                  this.setState({order: await this.getRequest(this.props.navigation.state.params!.id, (isLoading) => this.setState({isLoading}))})
+                }} width={200} text="Отказано"/></View>
+            </View> : <></>
+          }
+          <View style={{alignSelf: 'center'}}><AirButton onPressHandler={async () => {
+              this.props.navigation.navigate("Chat", { id: await this.createOrGoToChat(this.state.order!.user_id, (isLoading) => this.setState({isLoading}))})
+            }} width={200} text="Перейти в сообщения"/></View>
+        </View>
       </View>
     );
   }

@@ -199,3 +199,15 @@ export async function registrateOrder(
         state,
     })
 }
+
+export async function deleteRequest(
+    table: string,
+    field: string,
+    value: number | string
+) : Promise<ResultType> {
+    return await getServerResponse('/deleteRequest.php ', {
+        table,
+        field,
+        value
+    })
+}

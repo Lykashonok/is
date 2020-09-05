@@ -1,20 +1,16 @@
 import styles from '../../Styles/main';
 import React, { Component } from 'react';
 import { Text, View, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
-import {
-    NavigationParams,
-    NavigationScreenProp,
-    NavigationState,
-  } from 'react-navigation';
 import { connect } from 'react-redux';
 import { AppState } from '../../Redux/store/configureStore';
 import { getMessagesById, getChatsById, ResultType } from '../../Networking/ServerRequest';
 import { Message, Chat } from '../../Classes/Message'
 import { CommonUser } from '../../Classes/User'
 import { AlertManager } from '../../Classes/AlertManager'
+import { navigationProps } from 'src/Interfaces/shortcuts';
 
 interface IChatListScreenProps {
-    navigation: NavigationScreenProp<NavigationState, NavigationParams>;
+    navigation: navigationProps;
 }
 
 type Props = IChatListScreenProps & ILinkStateProps
@@ -52,34 +48,38 @@ class ChatListScreen extends Component<Props, IChatListScreenState> {
   render() {
     const { navigate } = this.props.navigation;
     return (
-      <View style={styles.container}>
-        <Text>This is the ChatList.</Text>
+      <View style={{flex: 1}}>
         {
-          this.state.isLoading ? <ActivityIndicator/>:
-          <Text>
-            Chats
-          </Text>
+          <View style={{height: 67, borderBottomWidth: 2, width: '100%', borderBottomColor: 'purple', alignItems: 'center', justifyContent:'center'}}>
+            <Text style={[styles.purple, styles.header]}>Ваши сообщения</Text>
+            {this.state.isLoading ? <ActivityIndicator/>: <></>}
+          </View>
+          
         }
         {
-          this.state.chats.length == 0 && !this.state.isLoading ? <Text>Пока диалогов нет</Text>:
+          this.state.chats.length == 0 && !this.state.isLoading ? <Text style={[styles.purple, styles.header, {alignSelf: 'center'}]}>Пока диалогов нет</Text>:
           <FlatList
             data={this.state.chats}
+            style={{paddingVertical: 25}}
             keyExtractor={chat => this.state.chats.indexOf(chat).toString()}
             refreshing={this.state.isLoading}
             onRefresh={async () => this.setState({chats: await this.getChatsById(this.props.user.getId(), (isLoading) => this.setState({ isLoading }))})}
             renderItem={chat => (
-              <TouchableOpacity onPress={() => navigate("Chat", { id: chat.item.id})}>
+              <TouchableOpacity 
+                style={{
+                  backgroundColor: 'white',
+                  width: '100%', marginVertical: 5, padding: 20,
+                  borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+                }}
+                onPress={() => navigate("Chat", { id: chat.item.id})}>
                 <Text>
-                  id of chat - {chat.item.id}
+                  id Диалога - {chat.item.id}
                 </Text>
                 <Text>
-                  id of user 1 - {chat.item.user1}
+                  id Пользователя - {chat.item.user2}
                 </Text>
                 <Text>
-                  id of user 2 - {chat.item.user2}
-                </Text>
-                <Text>
-                  created Date - {(new Date(chat.item.created)).toLocaleString()}
+                  Дата создания - {(new Date(chat.item.created)).toLocaleString()}
                 </Text>
               </TouchableOpacity>
               )

@@ -61,18 +61,18 @@ const routes = (type: string) => {
     switch(type){
         case 'customer':
             return [
-                { key: 'first', title: 'Find', icon: 'sc-telegram' },
-                { key: 'second', title: 'Chat List', icon: 'cart' },
-                { key: 'third', title: 'Order List', icon: 'cart' },
-                { key: 'fourth', title: 'Account', icon: 'cart' },
+                { key: 'first', title: '', icon: 'search' },
+                { key: 'second', title: '', icon: 'message' },
+                { key: 'third', title: '', icon: 'inbox' },
+                { key: 'fourth', title: '', icon: 'person' },
             ]
         case 'seller':
             return [
-                { key: 'first', title: 'Find', icon: 'sc-telegram' },
-                { key: 'second', title: 'Items', icon: 'sc-telegram' },
-                { key: 'third', title: 'Chat List', icon: 'cart' },
-                { key: 'fourth', title: 'Order List', icon: 'cart' },
-                { key: 'fifth', title: 'Account', icon: 'cart' },
+                { key: 'first', title: '', icon: 'search' },
+                { key: 'second', title: '', icon: 'shopping-cart' },
+                { key: 'third', title: '', icon: 'message' },
+                { key: 'fourth', title: '', icon: 'inbox' },
+                { key: 'fifth', title: '', icon: 'person' },
             ]
         default:
             return [
@@ -95,7 +95,9 @@ class MainTabViewScreen extends React.Component<Props, IMainTabViewScreenState> 
 
     _renderIcon = (route : any) => {
         return (
-            <Icon name={route.icon} size={24} color="black"></Icon>
+            route.focused?
+            <Icon name={route.route.icon} size={32} color="purple"></Icon> :
+            <Icon name={route.route.icon} size={32} color="gray"></Icon>
         );
     };
 
@@ -110,18 +112,19 @@ class MainTabViewScreen extends React.Component<Props, IMainTabViewScreenState> 
                 navigationState={this.state}
                 renderScene={this._renderScene}
                 // renderHeader={this._renderHeader}
+                sceneContainerStyle={{backgroundColor: 'white'}}
                 onIndexChange={this._handleIndexChange}
                 tabBarPosition="bottom"
                 initialLayout={{ height: 0, width: Dimensions.get('window').width }}
                 renderTabBar={props => 
                     <TabBar
                         {...props}
-                        indicatorStyle={{backgroundColor: 'gray'}}
-                        renderIcon={this._renderIcon}
-                        // tabStyle={{backgroundColor: 'white'}}
-                        // labelStyle={{opacity: 1}}
-                        // activeColor="purple"
-                        // inactiveColor="rgba(120,12,12,1)"
+                        indicatorStyle={{backgroundColor: 'purple'}}
+                        renderIcon={(scnee) => this._renderIcon(scnee)}
+                        tabStyle={{backgroundColor: 'white'}}
+                        labelStyle={{display: 'none'}}
+                        activeColor="purple"
+                        inactiveColor="gray"
                     />
                 }
                 lazy={true}
@@ -129,8 +132,6 @@ class MainTabViewScreen extends React.Component<Props, IMainTabViewScreenState> 
         );
     }
 }
-
-
 
 interface ILinkStateProps {
     user: CommonUser

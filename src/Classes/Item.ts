@@ -20,7 +20,6 @@ abstract class Component {
     public abstract operation(): string;
 }
 
-
 export class Item extends Component {
     public id: number = 0;
     public description: string = '';

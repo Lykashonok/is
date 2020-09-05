@@ -1,6 +1,6 @@
 import styles from '../../Styles/main';
 import React, { Component } from 'react';
-import { Text, View, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import { Text, View, TouchableOpacity, Image, FlatList } from 'react-native';
 import { navigationProps } from '../../Interfaces/shortcuts';
 import { SearchBar} from 'react-native-elements'
 import { connect } from 'react-redux';
@@ -8,6 +8,7 @@ import { AppState } from '../../Redux/store/configureStore';
 import { CommonUser } from '../../Classes/User'
 import { Item } from '../../Classes/Item'
 import { findRequest } from '../..//Networking/ServerRequest';
+import { Icon } from 'react-native-elements'
 
 interface IItemListScreenProps {
   navigation: navigationProps;
@@ -29,12 +30,12 @@ class ItemListScreen extends Component<Props, IItemListScreenState> {
     this.state = {
       search: '',
       items: [
-        new Item(2.123,'Noga',"5",123,123,123,"123"),
-        new Item(2.123,'Telephone',"5",123,123,123,'123'),
-        new Item(2.123,'Jepandopala',"5",123,123,123,'123'),
-        new Item(2.123,'Hoolahoopa',"5",123,123,123,'123'),
-        new Item(2.123,'Fridge',"5",123,123,123,'123'),
-        new Item(2.123,'oranjereya',"5",123,123,123,'123'),
+        // new Item(2.123,'Noga',"5",123,123,123,"123"),
+        // new Item(2.123,'Telephone',"5",123,123,123,'123'),
+        // new Item(2.123,'Jepandopala',"5",123,123,123,'123'),
+        // new Item(2.123,'Hoolahoopa',"5",123,123,123,'123'),
+        // new Item(2.123,'Fridge',"5",123,123,123,'123'),
+        // new Item(2.123,'oranjereya',"5",123,123,123,'123'),
       ],
       isLoading: false,
       searchTag: "name",
@@ -84,60 +85,86 @@ class ItemListScreen extends Component<Props, IItemListScreenState> {
           onEndEditing={async (e) => this.search(e)}
           onSubmitEditing={async (e) => this.search(e)}
           onChangeText={(search) => this.updateSearch(search)}
+          
+          searchIcon={<Icon name={'search'} color={'purple'}/>}
+          clearIcon={<Icon name={'cross'} type={'entypo'} color={'purple'}/>}
+          inputStyle={{color:"purple"}}
+          placeholderTextColor={'purple'}
           lightTheme={true}
           value={search}
           containerStyle={styles.search_bar}
         />
         {
-          this.state.items.length == 0 ? <Text>Ничего не найдено</Text> :
+          this.state.items.length == 0 ? <Text style={[styles.header, styles.purple, {alignSelf: 'center'}]}>Ничего не найдено</Text> :
           <FlatList
             onRefresh={() => this.search(null)}
             refreshing={this.state.isLoading}
-            contentContainerStyle={{padding: 20}}
+            contentContainerStyle={{padding: 10}}
             style={{flex: 1, width: '100%'}}
             keyExtractor={item => this.state.items.indexOf(item).toString()}
             data={this.state.items}
             renderItem={item => {
-
+              
               return (
                 <TouchableOpacity 
-                    style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)', marginVertical: 5, padding: 20}}
+                    style={{
+                      backgroundColor: 'white',
+                      width: '100%', marginVertical: 5, padding: 20,
+                      borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+                      shadowOpacity: 0.75, shadowRadius: 15,elevation: 7,
+                      shadowColor: 'purple', shadowOffset: { height: 30, width: 30 }, 
+                    }}
                     onPress={ () => {
                       this.props.navigation.navigate('Item', {id: item.item.id})
                     }}
                   >
-                    <Text>{item.item.getId()}</Text>
-                    <Text>{item.item.description}</Text>
-                    <Text>{item.item.created_date}</Text>
-                    <Text>{item.item.image}</Text>
-                    <Text>{item.item.name}</Text>
-                    <Text>{item.item.price}</Text>
-                    <Text>{item.item.seller_id}</Text>
-                    <Text>{item.item.stars}</Text>
+                    <View>
+                      <View>
+                        <Text>id продавца: {item.item.getId()}</Text>
+                        <Text>id товара: {item.item.getId()}</Text>
+                        <Text>Название: <Text style={styles.purple}>{item.item.description}</Text></Text>
+                        <Text>Цена: <Text style={styles.purple}>{item.item.price}$</Text></Text>
+                        <Text>Поступило в продажу с: {new Date(Number(item.item.created_date)).toLocaleDateString()}</Text>
+                        <Text>Всего звёзд: <Text style={styles.purple}>{item.item.stars}</Text></Text>
+                      </View>
+                      <Image style={{borderWidth: 1}} source={{uri: `data:image/gif;base64,${item.item.image}`}} />
+                    </View>
                     
                     {
                       item.item.items == '' ? <></> : 
-                      this.state.compositeInnerItems[this.state.items.indexOf(item.item)].map(item => {
-                        console.log(item)
-                        return (
-                          <TouchableOpacity
-                            onPress={ () => {
-                              this.props.navigation.navigate('Item', {id: item.id})
-                            }}
-                            style={{backgroundColor: 'rgba(255,130,10,0.5)', padding: 20, marginVertical: 5}}
-                          >
-                            <Text>{item.id}</Text>
-                            <Text>{item.description}</Text>
-                            <Text>{item.created_date}</Text>
-                            <Text>{item.image}</Text>
-                            <Text>{item.name}</Text>
-                            <Text>{item.price}</Text>
-                            <Text>{item.seller_id}</Text>
-                            <Text>{item.stars}</Text>
-                          </TouchableOpacity>
-                          )
-                        }
-                      )
+                      
+                      <View>
+                        <Text>В состав входит:</Text>
+                        {this.state.compositeInnerItems[this.state.items.indexOf(item.item)].map(item => {
+                          console.log(item)
+                          return (
+                            <TouchableOpacity
+                              onPress={ () => {
+                                this.props.navigation.navigate('Item', {id: item.id})
+                              }}
+                              style={{
+                                backgroundColor: 'white',
+                                width: '100%', marginVertical: 5, padding: 20,
+                                borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+                              }}
+                            >
+                              <View>
+                                <Text>{item.image}</Text>
+                                <View>
+                                  <Text>id продавца: {item.seller_id}</Text>
+                                  <Text>id товара: {item.id}</Text>
+                                  <Text>Название: <Text style={styles.purple}>{item.description}</Text></Text>
+                                  <Text>Цена: <Text style={styles.purple}>{item.price}$</Text></Text>
+                                  <Text>Поступило в продажу с: {new Date(Number(item.created_date)).toLocaleDateString()}</Text>
+                                  <Text>Всего звёзд: <Text style={styles.purple}>{item.stars}</Text></Text>
+                                </View>
+                                <Image source={{uri: `data:image/gif;base64,${item.image}`}} />
+                              </View>
+                            </TouchableOpacity>
+                            )
+                          }
+                        )}
+                      </View>
                     }
                   </TouchableOpacity>
               )

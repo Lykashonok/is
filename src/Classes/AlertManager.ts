@@ -13,7 +13,7 @@ export class AlertManager {
 
     public static alertHandler : DropdownAlert;
 
-    public registrateAlertHandler(alertHandler : DropdownAlert) {
+    public registrateAlertHandler(alertHandler : DropdownAlert): any {
         AlertManager.alertHandler = alertHandler
     }
 }

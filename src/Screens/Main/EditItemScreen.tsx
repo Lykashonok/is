@@ -8,6 +8,8 @@ import { CommonUser, Seller, Customer } from '../../Classes/User'
 import { Item } from '../../Classes/Item'
 import { getItemInfo } from '../../Networking/ServerRequest';
 import { Picker } from '@react-native-community/picker';
+import AirButton from '../../Components/AirButton';
+import LineInputForm from '../../Components/LineInputForm'
 
 interface IEditItemScreenProps {
   navigation: navigationProps;
@@ -24,6 +26,10 @@ interface IEditItemScreenState {
   lastSelected: string,
   items: Item[],
   pickers: {index: number, id: number}[],
+  name: string,
+  price: number,
+  description: string,
+  stars: number
 }
 
 class EditItemScreen extends Component<Props, IEditItemScreenState> {
@@ -38,6 +44,11 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
       lastSelected: '',
       pickers: [],
       items: [],
+
+      name: '',
+      price: 0,
+      description: '',
+      stars: 0
     };
   }
 
@@ -72,42 +83,45 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
 
   render() {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, {marginHorizontal: 20}]}>
         {
             this.state.editState == 'edit' ? <></> :
             <View>
-                <TouchableOpacity
-                    onPress={()=> {this.setState({itemState: 'item'})}}
-                    style={[this.state.itemState == 'item' ? {backgroundColor: 'rgba(0,0,0,0.3)'} : {backgroundColor: 'rgba(0,0,0,0.0)'},]}
-                >
-                    <Text>Обычный</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={()=> {this.setState({itemState: 'composite'})}}
-                    style={[this.state.itemState == 'item' ? {backgroundColor: 'rgba(0,0,0,0.0)'} : {backgroundColor: 'rgba(0,0,0,0.3)'},]}
-                >
-                    <Text>Составной</Text>
-                </TouchableOpacity>
+                <AirButton width={100} opacity={this.state.itemState == 'composite' ? 0.3 : 1} text='Обычный' onPressHandler={async () => {
+                  this.setState({itemState: 'item'})
+                }}/>
+                <AirButton width={100} opacity={this.state.itemState == 'composite' ? 1 : 0.3} text='Составной' onPressHandler={async () => {
+                  this.setState({itemState: 'composite'})
+                }}/>
             </View>
 
         }
         {
           this.state.isLoading ? <ActivityIndicator/> :
-          <View>
-            <Text>{this.state.item?.id}</Text>
-            <Text>{this.state.item?.image}</Text>
-            <Text>{this.state.item?.name}</Text>
-            <Text>{this.state.item?.price}</Text>
-            <Text>{this.state.item?.seller_id}</Text>
-            <Text>{this.state.item?.stars}</Text>
-            <Text>{this.state.item?.description}</Text>
-            <Text>{this.state.item?.created_date}</Text>
+          <View style={{
+            backgroundColor: 'white',
+            width: '100%', marginVertical: 5, padding: 20,
+            borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+            
+          }}
+          >
+            <Text>id товара: {this.state.item?.id}</Text>
+            <Text>id продавца: {this.state.item?.seller_id}</Text>
+            <Text>Название товара: </Text>
+            <LineInputForm password={false} onChangeTextHandler={(text) => this.setState({name: text})} value={this.state.name ? this.state.name : this.state.item?.name}/>
+            <Text>Цена товара: </Text> 
+            <LineInputForm password={false} onChangeTextHandler={(text) => this.setState({price: Number(text)})} value={this.state.price ? this.state.name : String(this.state.item?.price)}/>
+            <Text>Звёзды товара: </Text> 
+            <LineInputForm password={false} onChangeTextHandler={(text) => this.setState({stars: Number(text)})} value={this.state.stars ? this.state.name : String(this.state.item?.stars)}/>
+            <Text>Описание товара: </Text> 
+            <LineInputForm password={false} onChangeTextHandler={(text) => this.setState({description: text})} value={this.state.name ? this.state.name : this.state.item?.description}/>
+            <Text>Поступило на продажу с: { new Date(Number(this.state.item?.created_date)).toLocaleDateString()}</Text>
           </View>
         }
         {
           this.state.itemState == "item" ?
-          <TouchableOpacity
-            onPress={async () => {
+          <AirButton
+            onPressHandler={async () => {
                 if (this.state.item)
                     switch(this.state.editState) {
                         case 'edit' :
@@ -116,27 +130,25 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
                             return await (this.props.user as Seller).createItem(new Item(0, 'New Cool item', 'qwerqwer', 4, 123, Number(this.props.user.getId()), 'Park', 123, ''), (isLoading) => this.setState({isLoading}))
                     }
             }}
-          >
-            {
-                this.state.editState == 'edit' ? 
-                <Text>EDIT THIS</Text> : <Text>CREATE NEW</Text>
-            }
-          </TouchableOpacity> : 
-          <View>
-            <TouchableOpacity onPress={() => {
-              let tmp = this.state.pickers
-              tmp.length < 10 ? tmp.push({index: tmp.length, id: this.props.navigation.state.params!.items[0].id}) : null
-              this.setState({pickers: tmp})
-              this.forceUpdate()
-            }}>
-              <Text>Увеличить количество предметов</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {
-              this.state.pickers.length > 1 ? this.state.pickers.pop() : null
-              this.forceUpdate()
-            }}>
-              <Text>Уменьшить количество предметов</Text>
-            </TouchableOpacity>
+            text={this.state.editState == 'edit' ? 'Изменить' : 'Создать'}
+            width={100}
+          /> : 
+          <View style={{width: '100%', alignItems: 'center'}}>
+            <View style={{width: '100%', flexDirection: 'row', justifyContent: 'space-around'}}>
+              <AirButton width={100} text='Добавить' onPressHandler={async () => {
+                let tmp = this.state.pickers
+                tmp.length < 10 ? tmp.push({index: tmp.length, id: this.props.navigation.state.params!.items[0].id}) : null
+                this.setState({pickers: tmp})
+                this.forceUpdate()
+              }}/>
+              <AirButton width={100} text='Создать' onPressHandler={async () => {
+                return await (this.props.user as Seller).createCompositeItem(this.state.item!, this.state.pickers, this.state.items, (isLoading: boolean) => this.setState({isLoading}))
+              }}/>
+              <AirButton width={100} text='Убрать' onPressHandler={async () => {
+                this.state.pickers.length > 1 ? this.state.pickers.pop() : null
+                this.forceUpdate()
+              }}/>
+            </View>
             {
               this.state.pickers.map(picker => 
                 <Picker
@@ -147,21 +159,13 @@ class EditItemScreen extends Component<Props, IEditItemScreenState> {
                     tmp[picker.index].id = Number(itemValue)
                     this.setState({pickers: tmp})
                   }}>
-                    {
-                      this.state.items.filter(item => item.items == '').map(item => <Picker.Item label={item.name == '' ? 'Без имени' : item.name} value={item.id}/>)
-                    }
+                  {
+                    this.state.items.filter(item => item.items == '').map(item => <Picker.Item label={item.name == '' ? 'Без имени' : item.name} value={item.id}/>)
+                  }
                 </Picker>
               )
             }
-            <TouchableOpacity
-              onPress={async () => {
-                return await (this.props.user as Seller).createCompositeItem(this.state.item!, this.state.pickers, this.state.items, (isLoading: boolean) => this.setState({isLoading}))
-              }}
-            >
-              {
-                <Text>CREATE COMPOSITE</Text>
-              }
-            </TouchableOpacity>
+            
           </View>
         }
       </View>

@@ -14,6 +14,16 @@ const styles = StyleSheet.create({
   },
   search_bar: {
     width: '100%'
+  },
+  header: {
+    fontSize: 30,
+  },
+  title: {
+    fontSize: 80,
+    color:'purple'
+  },
+  purple: {
+    color: 'purple'
   }
 });
 

@@ -3,11 +3,13 @@ import React, { Component, version } from 'react';
 import { Text, View, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { navigationProps } from '../../Interfaces/shortcuts';
 import { Order, Caretaker } from '../../Classes/Order'
-import { getRequest, registrateOrder } from '../../Networking/ServerRequest'
+import { getRequest, registrateOrder, deleteRequest } from '../../Networking/ServerRequest'
 import { CommonUser } from '../../Classes/User'
 import { connect } from 'react-redux';
 import { AppState } from '../../Redux/store/configureStore';
 import { AlertManager } from '../../Classes/AlertManager';
+import { SlideFromRightIOS } from 'react-navigation-stack/lib/typescript/src/vendor/TransitionConfigs/TransitionPresets';
+import AirButton from '../../Components/AirButton';
 
 interface IOrderListScreenProps {
     navigation: navigationProps;
@@ -19,7 +21,8 @@ interface IOrderListScreenState {
   isLoading: boolean,
   orders: Order[],
   searchFieldType: string,
-  caretaker: Caretaker
+  caretaker: Caretaker,
+  canRestore: boolean
 }
 
 class OrderListScreen extends Component<Props, IOrderListScreenState> {
@@ -29,7 +32,8 @@ class OrderListScreen extends Component<Props, IOrderListScreenState> {
       isLoading: false,
       orders: [],
       searchFieldType: this.props.user.getInfo().type == 'customer' ? 'user_id' : 'seller_id',
-      caretaker: new Caretaker(new Order())
+      caretaker: new Caretaker(new Order()),
+      canRestore: false
     }
   }
   public async getRequest(id: number, field: string, activityIndicator? : (value : boolean) => void ) : Promise<Order[]>{
@@ -55,11 +59,30 @@ class OrderListScreen extends Component<Props, IOrderListScreenState> {
   async reregistrateOrder(orderToRestore: Order, activityIndicator? : (value : boolean) => void) {
     try {
         if (activityIndicator) activityIndicator(true);
+        
+        console.log('restore to ', orderToRestore)
         let response = await registrateOrder(orderToRestore.id, orderToRestore.item_id, orderToRestore.user_id, orderToRestore.seller_id, orderToRestore.created_date, orderToRestore.state);
+        this.setState({orders: await this.getRequest(this.props.user.getId(), this.state.searchFieldType, (isLoading) => this.setState({isLoading})), canRestore: true});
         if (response.code != 200) throw "getRequest order failed"
         AlertManager.alertHandler.alertWithType('success', 'Предмет восстановлен', '')
     } catch {
         AlertManager.alertHandler.alertWithType('error', 'Предмет не восстановлен', '')
+    } finally {     
+        if (activityIndicator) activityIndicator(false);
+    }
+  }
+
+  async deleteOrder(id: number, activityIndicator? : (value : boolean) => void) {
+    try {
+        if (activityIndicator) activityIndicator(true);
+        let response = await deleteRequest('orders','id',Number(id));
+        this.setState({orders: await this.getRequest(this.props.user.getId(), this.state.searchFieldType, (isLoading) => this.setState({isLoading})), canRestore: true});
+        if (response.code != 200) throw "getRequest order failed"
+        
+        AlertManager.alertHandler.alertWithType('warn', 'Предмет удалён!', 'Но вы можете ещё восстановить')
+
+    } catch {
+        AlertManager.alertHandler.alertWithType('error', 'Предмет не удалён', '')
     } finally {
         
         if (activityIndicator) activityIndicator(false);
@@ -69,7 +92,22 @@ class OrderListScreen extends Component<Props, IOrderListScreenState> {
   render() {
     return (
       <View style={{}}>
-        <Text>This is the OrderListScreen.</Text>
+        <View style={{height: 67, borderBottomWidth: 2, width: '100%', borderBottomColor: 'purple', alignItems: 'center', justifyContent:'center'}}>
+          <Text style={[styles.purple, styles.header]}>Ваши заказы</Text>
+        </View>
+        {
+          !this.state.canRestore ? <></> :
+          <View style={{alignSelf: 'center', paddingTop: 10}}>
+            <AirButton onPressHandler={ async ()=>{
+                console.log(this.state.caretaker)
+                await this.reregistrateOrder(this.state.caretaker.undo() as Order, (isLoading) => this.setState({isLoading}))
+                this.setState({canRestore: false})
+              }}
+              width={200}
+              text={'Восстановить'}
+            />
+          </View>
+        }
         {
           this.props.user.getInfo().type == 'customer' ? 
           <FlatList
@@ -77,50 +115,25 @@ class OrderListScreen extends Component<Props, IOrderListScreenState> {
             contentContainerStyle={{padding: 20}}
             keyExtractor={order => this.state.orders.indexOf(order).toString()}
             refreshing={this.state.isLoading}
-            onRefresh={() => this.getRequest(this.props.user.getId(), this.state.searchFieldType, (isLoading) => this.setState({isLoading}))}
+            onRefresh={async () => this.setState({orders: await this.getRequest(this.props.user.getId(), this.state.searchFieldType, (isLoading) => this.setState({isLoading}))})}
             renderItem={order => (
               <TouchableOpacity
-              style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)', marginVertical: 5, padding: 20}}
+              style={{
+                backgroundColor: 'white',
+                width: '100%', marginVertical: 5, padding: 20,
+                borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+              }}
               onPress={ () => {
                 this.props.navigation.navigate('Order', {id: order.item.id})
               }}
             >
-              <Text>{order.item.id}</Text>
-              <Text>{order.item.item_id}</Text>
-              <Text>{order.item.seller_id}</Text>
-              <Text>{order.item.state}</Text>
-              <Text>{order.item.user_id}</Text>
-              <Text>{order.item.finished_date}</Text>
-              <Text>{order.item.created_date}</Text>
-              <TouchableOpacity
-                    style={{backgroundColor: 'red', width: 'auto', alignSelf: 'flex-end'}}
-                    onPress={async () => {
-                      this.setState({caretaker: new Caretaker(order.item)})
-                      this.state.caretaker.backup()
-                      AlertManager.alertHandler.closeAction = async () => {
-                        await this.reregistrateOrder(this.state.caretaker.undo() as Order, (isLoading) => this.setState({isLoading}))
-                      }
-                      AlertManager.alertHandler.alertWithType('warn', 'Предмет удалён!', 'Нажмите, чтобы отменить')
-                      
-                      let editorder = new Order(0,0,0,0,0,0,'confirmed', new Order(0,0,0,0,0,0,'confirmed'));
-                      let caretaker = new Caretaker(editorder);
-                      console.log('we created order', order)
-                      caretaker.backup();
-                      editorder.item_id = 123
-                      editorder.seller_id = 321
-                      editorder.state = 'argar'
-                      editorder.user_id = 321
-                      console.log('changed values to', order)
-                      caretaker.showHistory();
-                      editorder = caretaker.undo() as Order
-                      caretaker.showHistory();
-                      console.log('after undoing is', order)
-                    }}
-                  >
-                    <Text>
-                      DELETE
-                    </Text>
-                  </TouchableOpacity>
+              <Text>id заказа:{order.item.id}</Text>
+              <Text>id товара:{order.item.item_id}</Text>
+              <Text>id продавца:{order.item.seller_id}</Text>
+              <Text>id заказчика:{order.item.user_id}</Text>
+              <Text>Состояние:{order.item.state}</Text>
+              {/* <Text>{order.item.finished_date}</Text> */}
+              <Text>Дата заказа:{order.item.created_date}</Text>
             </TouchableOpacity>
           )}/> : 
           <FlatList
@@ -128,22 +141,56 @@ class OrderListScreen extends Component<Props, IOrderListScreenState> {
             data={this.state.orders}
             keyExtractor={order => this.state.orders.indexOf(order).toString()}
             refreshing={this.state.isLoading}
-            onRefresh={() => this.getRequest(this.props.user.getId(), this.state.searchFieldType, (isLoading) => this.setState({isLoading}))}
+            onRefresh={async () => this.setState({orders: await this.getRequest(this.props.user.getId(), this.state.searchFieldType, (isLoading) => this.setState({isLoading}))})}
             renderItem={order => (
               <View>
                 <TouchableOpacity
-                  style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)', marginVertical: 5, padding: 20}}
+                  style={{
+                    backgroundColor: 'white',
+                    width: '100%', marginVertical: 5, padding: 20,
+                    borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+                  }}
                   onPress={ () => {
                     this.props.navigation.navigate('Order', {id: order.item.id})
                   }}
                 >
-                  <Text>{order.item.id}</Text>
-                  <Text>{order.item.item_id}</Text>
-                  <Text>{order.item.seller_id}</Text>
-                  <Text>{order.item.state}</Text>
-                  <Text>{order.item.user_id}</Text>
-                  <Text>{order.item.finished_date}</Text>
-                  <Text>{order.item.created_date}</Text>
+                  
+                  <Text>id заказа:{order.item.id}</Text>
+                  <Text>id товара:{order.item.item_id}</Text>
+                  <Text>id продавца:{order.item.seller_id}</Text>
+                  <Text>id заказчика:{order.item.user_id}</Text>
+                  <Text>Состояние:{order.item.state}</Text>
+                  {/* <Text>{order.item.finished_date}</Text> */}
+                  <Text>Дата заказа:{order.item.created_date}</Text>
+                  <TouchableOpacity
+                    style={{backgroundColor: 'rgba(230,0,0,0.4)', width: 'auto', alignSelf: 'flex-end', borderRadius: 10, padding: 5}}
+                    onPress={async () => {
+                      this.state.caretaker.registrateOriginator(
+                        new Order(
+                        order.item.id,
+                        order.item.item_id,
+                        order.item.user_id,
+                        order.item.seller_id,
+                        order.item.created_date,
+                        order.item.finished_date,
+                        order.item.state,
+                        new Order(
+                          order.item.id,
+                          order.item.item_id,
+                          order.item.user_id,
+                          order.item.seller_id,
+                          order.item.created_date,
+                          order.item.finished_date,
+                          order.item.state)
+                      ))
+                      this.state.caretaker.backup()
+                      await this.deleteOrder(order.item.getId())
+                    }}
+                  >
+                    <Text>
+                      Удалить
+                    </Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
               </View>
           )}/>

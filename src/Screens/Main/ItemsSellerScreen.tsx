@@ -8,6 +8,7 @@ import { AppState } from '../../Redux/store/configureStore';
 import { CommonUser } from '../../Classes/User'
 import { Item } from '../../Classes/Item'
 import { getRequest, getItemInfo } from '../../Networking/ServerRequest';
+import AirButton from '../../Components/AirButton';
 
 interface IItemsSellerScreenProps {
   navigation: navigationProps;
@@ -70,19 +71,12 @@ class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
 
   render() {
     return (
-      <View style={styles.container}>
-        <TouchableOpacity
-          style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)'}}
-          onPress={ () => {
-            this.props.navigation.navigate('EditItem', {items: this.state.items})
-          }}
-        >
-          <Text>
-            CREATE ITEM
-          </Text>
-        </TouchableOpacity>
+      <View style={{flex: 1, width: '100%', alignItems: 'center'}}>
+        <View style={{height: 67, borderBottomWidth: 2, width: '100%', borderBottomColor: 'purple', alignItems: 'center', justifyContent:'center'}}>
+        <Text style={[styles.purple, styles.header]}>Ваши товары</Text>
+        </View>
         {
-          this.state.items.length == 0 ? <Text>Ничего не найдено</Text> :
+          this.state.items.length == 0 ? <Text style={[styles.header, styles.purple, {alignSelf: 'center'}]}>Ничего не найдено</Text> :
           <FlatList
             contentContainerStyle={[{padding: 25}]}
             style={{flex: 1, width: '100%'}}
@@ -94,19 +88,21 @@ class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
               console.info(item.item.items)
               return (
                 <TouchableOpacity 
-                    style={{width: '100%', backgroundColor: 'rgba(0,0,0,0.1)', padding: 25, marginVertical: 5}}
+                    style={{
+                      backgroundColor: 'white',
+                      width: '100%', marginVertical: 5, padding: 20,
+                      borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+                    }}
                     onPress={ () => {
                       this.props.navigation.navigate('EditItem', {item: item.item, items: this.state.items})
                     }}
                   >
-                    <Text>{item.item.getId()}</Text>
-                    <Text>{item.item.description}</Text>
-                    <Text>{item.item.created_date}</Text>
-                    <Text>{item.item.image}</Text>
-                    <Text>{item.item.name}</Text>
-                    <Text>{item.item.price}</Text>
-                    <Text>{item.item.seller_id}</Text>
-                    <Text>{item.item.stars}</Text>
+                    <Text>id продавца: {item.item.getId()}</Text>
+                    <Text>id товара: {item.item.getId()}</Text>
+                    <Text>Название: <Text style={styles.purple}>{item.item.description}</Text></Text>
+                    <Text>Цена: <Text style={styles.purple}>{item.item.price}$</Text></Text>
+                    <Text>Поступило в продажу с: {new Date(Number(item.item.created_date)).toLocaleDateString()}</Text>
+                    <Text>Всего звёзд: <Text style={styles.purple}>{item.item.stars}</Text></Text>
                     {
                       item.item.items == '' ? <></> :
                       <View>
@@ -121,16 +117,19 @@ class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
                                 onPress={ () => {
                                   this.props.navigation.navigate('EditItem', {items: this.state.items, item})
                                 }}
-                                style={{backgroundColor: 'rgba(255,130,10,0.5)', padding: 20, marginVertical: 5}}
+                                style={{
+                                  backgroundColor: 'white',
+                                  width: '100%', marginVertical: 5, padding: 20,
+                                  borderWidth: 3, borderColor: 'purple', borderRadius: 15,
+                                }}
                               >
-                                <Text>{item.id}</Text>
-                                <Text>{item.description}</Text>
-                                <Text>{item.created_date}</Text>
-                                <Text>{item.image}</Text>
-                                <Text>{item.name}</Text>
-                                <Text>{item.price}</Text>
-                                <Text>{item.seller_id}</Text>
-                                <Text>{item.stars}</Text>
+                                <Text>id продавца: {item.getId()}</Text>
+                                <Text>id товара: {item.getId()}</Text>
+                                <Text>Название: <Text style={styles.purple}>{item.description}</Text></Text>
+                                <Text>Цена: <Text style={styles.purple}>{item.price}$</Text></Text>
+                                <Text>Поступило в продажу с: {new Date(Number(item.created_date)).toLocaleDateString()}</Text>
+                                <Text>Всего звёзд: <Text style={styles.purple}>{item.stars}</Text></Text>
+                                <Text>Описание: <Text style={styles.purple}>{item.description}</Text></Text>
                               </TouchableOpacity>
                             )
                           })
@@ -142,6 +141,7 @@ class ItemsSellerScreen extends Component<Props, IItemsSellerScreenState> {
             }}
           />
         }
+        <View style={{position: 'absolute', bottom: 10}}><AirButton onPressHandler={() => this.props.navigation.navigate('EditItem', {items: this.state.items})} text={'Новый'} width={200} /></View>
       </View>
     );
   }
